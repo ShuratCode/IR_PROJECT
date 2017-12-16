@@ -11,24 +11,26 @@ import javafx.stage.Stage;
 /**
  * Created by Admin on 21/06/2017.
  */
-public class AlertBox {
-    public  void display(String WinName,String text){
-        Stage window=new Stage();
+public class AlertBox
+{
+    public void display(String WinName, String text)
+    {
+        Stage window = new Stage();
 
         window.initModality(Modality.APPLICATION_MODAL);
         window.setTitle(WinName);
         window.setMinWidth(250);
         window.setMinHeight(100);
 
-        Label label=new Label(text);
-        Button btn_close=new Button("OK");
+        Label  label     = new Label(text);
+        Button btn_close = new Button("OK");
         btn_close.setOnAction(event -> window.close());
 
-        VBox contain=new VBox(15);
-        contain.getChildren().addAll(label,btn_close);
+        VBox contain = new VBox(15);
+        contain.getChildren().addAll(label, btn_close);
         contain.setAlignment(Pos.CENTER);
 
-        Scene scene=new Scene(contain);
+        Scene scene = new Scene(contain);
         window.setScene(scene);
         window.showAndWait();
 
