@@ -21,7 +21,7 @@ import java.util.*;
  * @author Shaked
  * @since 23-Nov-17
  */
-public class MyModel{
+public class MyModel extends Observable {
 
     private ReadFile readFile;
     private Parse parse;
@@ -123,7 +123,8 @@ public class MyModel{
             e.printStackTrace();
         }
 
-
+        setChanged();
+        notifyObservers("index end");
     }
 
     /**

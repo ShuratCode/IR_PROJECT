@@ -18,6 +18,7 @@ public class Main extends Application {
         /*******************/
         Controller C = fxmlLoader.getController();
         C.stage=primaryStage;
+        C.initView();
         /*******************/
         primaryStage.show();
 

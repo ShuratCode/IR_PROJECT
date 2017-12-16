@@ -2,6 +2,7 @@ package View;
 
 import Model.MyModel;
 import com.sun.rmi.rmid.ExecPermission;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -14,10 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class Controller  {
+
+public class Controller implements Observer {
     private MyModel Model;
     private boolean isLoad;
     @FXML
@@ -42,22 +42,33 @@ public class Controller  {
         this.Model = Model;
     }
     /***********Functions*****************/
+    public void initView(){
+        bReset.setDisable(true);
+        bSaveDC.setDisable(true);
+        bShowCache.setDisable(true);
+        bShowDic.setDisable(true);
+    }
     public void startIndexing(){
         try {
             Model = new MyModel(tIn.getText(), cStemer.isSelected(), tOut.getText(), 10);
-            Model.fnBuildDB();
-            AlertBox a = new AlertBox();
-            a.display("Indexing Finish", Model.buildBDInfo);
-            DBInfo.setText(Model.buildBDInfo);
-            bStartIndexing.setDisable(false);
-            bReset.setDisable(false);
-            bSaveDC.setDisable(false);
-            bLoadDC.setDisable(false);
-            bSelectRoot.setDisable(false);
-            bSelectDest.setDisable(false);
-            bShowCache.setDisable(false);
-            bShowDic.setDisable(false);
-            isLoad=true;
+            Model.addObserver(this);
+            bStartIndexing.setDisable(true);
+            bReset.setDisable(true);
+            bSaveDC.setDisable(true);
+            bLoadDC.setDisable(true);
+            bSelectRoot.setDisable(true);
+            bSelectDest.setDisable(true);
+            bShowCache.setDisable(true);
+            bShowDic.setDisable(true);
+            new Thread(()->{
+                try {
+                    Model.fnBuildDB();
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }).start();
+
         }
         catch (Exception e){
             e.printStackTrace();
@@ -125,4 +136,30 @@ public class Controller  {
         }
     }
 
+    @Override
+    public void update(Observable o, Object arg) {
+        String s=(String)arg;
+        switch (s){
+            case "index end" : {
+                Platform.runLater(()->{AlertBox a = new AlertBox();
+                            a.display("Indexing Finish", Model.buildBDInfo);
+                            DBInfo.setText(Model.buildBDInfo);
+                            bStartIndexing.setDisable(false);
+                            bReset.setDisable(false);
+                            bSaveDC.setDisable(false);
+                            bLoadDC.setDisable(false);
+                            bSelectRoot.setDisable(false);
+                            bSelectDest.setDisable(false);
+                            bShowCache.setDisable(false);
+                            bShowDic.setDisable(false);
+                            isLoad = true;});
+
+                break;
+            }
+            case "input error":{
+
+            }
+
+        }
+    }
 }
