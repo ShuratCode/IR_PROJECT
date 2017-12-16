@@ -346,7 +346,7 @@ public class MyModel extends Observable
 
     public void fnShowCache()
     {
-        File file = new File ("Resources\\cache");
+        File file = new File ("Resources\\Cache.txt");
         if (!file.exists())
         {
             try
@@ -394,7 +394,7 @@ public class MyModel extends Observable
             pairs.add(new MutablePair<>(sTerm, dictionary.get(sTerm).getLeft()[1]));
         }
 
-        File file = new File ("Resources\\Dictionary");
+        File file = new File ("Resources\\Dictionary.txt");
         if (!file.exists())
         {
             try
