@@ -33,7 +33,7 @@ public class MyModel{
     private int iNumOfDocs, iNumOfParts;
 
     public String buildBDInfo;
-
+    public HashMap<String,int[]> mDocInfo;
 
 
 
@@ -48,7 +48,7 @@ public class MyModel{
         this.arrayStringFilesPath = new ArrayList<>();
         this.stemmer = new PorterStemmer() {
         };
-
+        this.mDocInfo=new HashMap<String,int[]>();
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
     }
@@ -89,7 +89,9 @@ public class MyModel{
                 StringBuilder sbDocName = new StringBuilder(listDocumentInFile.get(iIndex2).getsName());
                 sbDocName.deleteCharAt(0);
                 sbDocName.deleteCharAt(sbDocName.length() - 1);
-                listOfTerms.addAll(parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName)));
+                MutablePair<ArrayList<Term>,int[]> m=parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
+                listOfTerms.addAll(m.getLeft());
+                mDocInfo.put(String.valueOf(sbDocName),m.getRight());
             }
             if (this.bToStem) {
                 for (int iIndex3 = 0, iSize = listOfTerms.size(); iIndex3 < iSize; iIndex3++) {

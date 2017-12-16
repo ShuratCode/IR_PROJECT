@@ -1,13 +1,14 @@
 package Parse;
 
+import Tuple.MutablePair;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 
 /**
- * @author Shaked
- * @since 20-Nov-17
+ * this class take adocument and parse it intoo list of terms
  */
 public class Parse
 {
@@ -22,12 +23,12 @@ public class Parse
 
 
   /**
-   *
-   *Elior's ver for parsing
-   * @param sbText
+   *this is the main method,
+   * it takes text and return a list of terms
+   * @param sbText ,docName
    * @return arraylist of terms
    */
-  public ArrayList<Term> fnParseText1 (StringBuilder sbText , String docName){
+  public MutablePair<ArrayList<Term>,int[]> fnParseText1 (StringBuilder sbText , String docName){
     String[] arrStringWords = sbText.toString().split("[ \t\n\r\f:;?!'`/|()<#>*&+-=]");  // delimeters
     String sWord ,dd , mm,yyyy , bigLetters, number;
     int orgLen;
@@ -210,9 +211,26 @@ public class Parse
           }
       }
     }
-    return new ArrayList<Term>(termMap.values());
+    ArrayList<Term> res=new ArrayList<Term>(termMap.values());
+    int MaxTF=0,DLen=0,temp;
+    for(int i=0;i<res.size();i++){
+        temp=res.get(i).getiNumOfTimes();
+        DLen+=temp;
+        if(temp>MaxTF){
+            MaxTF=temp;
+        }
+
+    }
+    int[] mem={MaxTF,DLen};
+    MutablePair<ArrayList<Term>,int[]> ret=new MutablePair<ArrayList<Term>,int[]>(res,mem);
+    return ret;
   }
 
+    /**
+     * clean strings: takes out symbols that are not part of the term
+     * @param  s
+     * @return clean string
+     */
   private String fnCleanS(String s){
 
       while(s.length()>0 &&(s.charAt(0)==','||s.charAt(0)=='.' ||s.charAt(0)=='/' || s.charAt(0) == '"' || s.charAt(0) == '['||s.charAt(0) == ']')){
@@ -227,6 +245,12 @@ public class Parse
       }
     return s;
   }
+
+    /**
+     * used to check is the srting is a valid month
+     * @param sWord
+     * @return String translated input into number or empty string if not valid
+     */
   private String fnIsMonth(String sWord){ // switch checkes for month num
     switch (sWord.toLowerCase()) {
       case "january":
@@ -258,6 +282,12 @@ public class Parse
   }
 
 
+    /**
+     * takes a string and parse it into integer,
+     * if itn not a valid number it returns 0
+     * @param s
+     * @return int
+     */
   private int S2Int(String s){
 
       try{
