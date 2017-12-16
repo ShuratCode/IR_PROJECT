@@ -24,8 +24,7 @@ import java.util.TreeMap;
  * @author Shaked
  * @since 23-Nov-17
  */
-public class MyModel
-{
+public class MyModel extends Observable {
 
     public String buildBDInfo;
     private ReadFile  readFile;
@@ -136,7 +135,8 @@ public class MyModel
             e.printStackTrace();
         }
 
-
+        setChanged();
+        notifyObservers("index end");
     }
 
     /**
