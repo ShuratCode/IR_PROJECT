@@ -285,7 +285,7 @@ public class MyIndexer
                 String sLine;
                 while (null != (sLine = bf.readLine()))
                 {
-                    this.cache.put(sLine, new MutablePair<String, Long>("", (long) -1));
+                    this.cache.put(sLine, new MutablePair<>("", (long) -1));
                 }
             }
             catch (IOException e)
@@ -711,36 +711,49 @@ public class MyIndexer
      * Write the cache and the dictionary to a files.
      * Based on the path we got in the gui
      *
-     * @param sPathForObjects
+     * @param sPathForObjects Path to write the cache and dictionary
      */
     public void fnWriteDicAndCache(String sPathForObjects)
     {
         this.sPathForObject = sPathForObjects;
-        File   file = new File(this.sPathForObject + "\\Objects");
         String sPathForDic, sPathForCache;
-        if (!file.exists())
+        String[] sPaths = fnGetPathForDicAndCache();
+        sPathForDic = sPaths[0];
+        sPathForCache = sPaths[1];
+
+        File fileForDictionary = new File (sPathForDic);
+        File fileForCache = new File (sPathForCache);
+        if (!fileForDictionary.exists())
         {
-            file.mkdir();
+            try
+            {
+                fileForDictionary.createNewFile();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
-        if (bToStem)
+        if (!fileForCache.exists())
         {
-            sPathForDic = this.sPathForObject + "Objects\\dicStemmed";
-            sPathForCache = this.sPathForObject + "Objects\\cacheStemmed";
-        }
-        else
-        {
-            sPathForDic = this.sPathForObject + "Objects\\dicNonStemmed)";
-            sPathForCache = this.sPathForObject + "Objects\\cacheNonStemmed";
+            try
+            {
+                fileForCache.createNewFile();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
 
 
         try
         {
-            ObjectOutputStream outputDic   = new ObjectOutputStream(new FileOutputStream(sPathForDic));
-            ObjectOutputStream outputCache = new ObjectOutputStream(new FileOutputStream(sPathForCache));
+            BufferedWriter outputDic   = new BufferedWriter(new FileWriter(sPathForDic));
+            BufferedWriter outputCache = new BufferedWriter(new FileWriter(sPathForCache));
 
-            outputDic.writeObject(this.dictionary);
-            outputCache.writeObject(this.cache);
+            fnWriteDictionary(outputDic);
+            fnWriteCache(outputCache);
 
             outputCache.close();
             outputDic.close();
@@ -754,17 +767,118 @@ public class MyIndexer
     /**
      * Read dictionary form the disk to memory
      */
-    public void fnReadDictionary()
+    public void fnReadDictionary(String sPathToRead)
     {
-       //TODO: complete
+        String sPathForDictionary;
+       if(bToStem)
+       {
+           sPathForDictionary = sPathToRead + "dicStemmed";
+       }
+       else
+       {
+           sPathForDictionary = sPathToRead + "dicNonStemmed)";
+       }
+
+       BufferedReader br = null;
+       File file = new File(sPathForDictionary);
+       try
+       {
+           if (!file.exists())
+           {
+               System.out.println("We can't read the dictionary if you don't have file in this path");
+           }
+           else
+           {
+               br = new BufferedReader(new FileReader(file));
+               String sLine;
+               while ((sLine = br.readLine()) != null)
+               {
+                   int iEndIndex = sLine.indexOf(':');
+                   String sTerm = sLine.substring(0, iEndIndex);
+                   String sData = sLine.substring(iEndIndex + 1);
+                   String[] arrData = sData.split(",");
+                   Integer[] integers = {Integer.valueOf(arrData[0]), Integer.valueOf(arrData[1])};
+                   Float f = Float.valueOf(arrData[2]);
+                   Long l = Long.valueOf(arrData[3]);
+                   this.dictionary.put(sTerm, new MutableTriple<>(integers, f, l));
+               }
+           }
+       }
+       catch (IOException e)
+       {
+           e.printStackTrace();
+       }
+       finally
+       {
+           if (br != null)
+           {
+               try
+               {
+                   br.close();
+               }
+               catch (IOException e)
+               {
+                   e.printStackTrace();
+               }
+           }
+       }
     }
 
     /**
      * Read cache from disk to the memory
      */
-    public void fnReadCache()
+    public void fnReadCache(String sPathToRead)
     {
-        //TODO: complete
+        String sPathForCache;
+        if (bToStem)
+        {
+            sPathForCache = sPathToRead + "cacheStemmed";
+        }
+        else
+        {
+            sPathForCache = sPathToRead + "cacheNonStemmed";
+        }
+
+        BufferedReader br = null;
+        File file = new File (sPathForCache);
+        try
+        {
+            if (!file.exists())
+            {
+                System.out.println("We can't read the cache if you don't have file");
+            }
+            else
+            {
+                br = new BufferedReader(new FileReader(file));
+                String sLine;
+                while ((sLine = br.readLine()) != null)
+                {
+                    int iEndIndex = sLine.indexOf(":");
+                    String sTerm = sLine.substring(0, iEndIndex);
+                    String sData = sLine.substring(iEndIndex + 1);
+                    String[] arrData = sData.split("!#");
+                    this.cache.put(sTerm, new MutablePair<>(arrData[0], Long.valueOf(arrData[1])));
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (null != br)
+            {
+                try
+                {
+                    br.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
 
     }
 
@@ -773,6 +887,33 @@ public class MyIndexer
      * Reset the index
      */
     public void fnResetIndex()
+    {
+       fnDeletePosting();
+       fnDeleteCacheAndDictionary();
+    }
+
+    private void fnDeleteCacheAndDictionary()
+    {
+        String   sPathForDic, sPathForCache;
+        String[] sPaths = fnGetPathForDicAndCache();
+        sPathForDic = sPaths[0];
+        sPathForCache = sPaths[1];
+
+        File fileForDictionary = new File(sPathForDic);
+        File fileForCache      = new File(sPathForCache);
+
+        if (fileForDictionary.exists())
+        {
+            fileForDictionary.delete();
+        }
+        if (fileForCache.exists())
+        {
+            fileForCache.delete();
+        }
+
+    }
+
+    private void fnDeletePosting()
     {
         File file = new File(this.sPath);
         if (file.exists())
@@ -787,23 +928,6 @@ public class MyIndexer
                 }
             }
             file.delete();
-        }
-
-        if (null != this.sPathForObject)
-        {
-            File fileObjects = new File(this.sPathForObject);
-            if (fileObjects.exists())
-            {
-                File[] files = fileObjects.listFiles();
-                if (null != files)
-                {
-                    for (int i = 0, filesLength = files.length; i < filesLength; i++)
-                    {
-                        File file1 = files[i];
-                        file1.delete();
-                    }
-                }
-            }
         }
     }
 
@@ -887,12 +1011,8 @@ public class MyIndexer
         this.bToStem = bToStem;
     }
 
-    public void setPathForObjects(String pathForObjects)
-    {
-        this.sPathForObject = pathForObjects;
-    }
 
-    public void fnWriteDictionary(BufferedWriter bf) throws IOException
+    private void fnWriteDictionary(BufferedWriter bf) throws IOException
     {
         for (String sTerm : this.dictionary.keySet())
         {
@@ -903,7 +1023,7 @@ public class MyIndexer
         }
     }
 
-    public void fnWriteCache(BufferedWriter bf) throws IOException
+    private void fnWriteCache(BufferedWriter bf) throws IOException
     {
         for (String sTerm : this.cache.keySet())
         {
@@ -913,4 +1033,29 @@ public class MyIndexer
            bf.newLine();
         }
     }
+
+    public void setPathForObjects(String pathForObjects)
+    {
+        this.sPathForObject = pathForObjects;
+    }
+
+    private String[] fnGetPathForDicAndCache()
+    {
+        String sPathForDic, sPathForCache;
+        if (bToStem)
+        {
+            sPathForDic = this.sPathForObject + "dicStemmed";
+            sPathForCache = this.sPathForObject + "cacheStemmed";
+        }
+        else
+        {
+            sPathForDic = this.sPathForObject + "dicNonStemmed)";
+            sPathForCache = this.sPathForObject + "cacheNonStemmed";
+        }
+
+        return new String[]{sPathForDic, sPathForCache};
+    }
+
+
+
 }

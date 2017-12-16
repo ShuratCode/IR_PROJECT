@@ -68,7 +68,7 @@ public class MutableTriple<L, M, R> implements Serializable
     @Override
     public String toString()
     {
-        return this.left + "," + this.middle + "," + this.right ;
+        return this.left + "," + this.middle + "," + this.right;
     }
 
     public boolean equals(Object obj)

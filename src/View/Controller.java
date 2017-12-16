@@ -86,7 +86,7 @@ public class Controller
             File selectedDirectory = chooser.showDialog(stage);
             if (selectedDirectory != null)
             {
-                Model.fnSaveChache(selectedDirectory.getPath());
+                Model.fnSaveDicAndCache(selectedDirectory.getPath());
             }
         }
     }
@@ -118,7 +118,7 @@ public class Controller
         tOut.setText(selectedDirectory.getPath());
     }
 
-    public void openDi() throws IOException
+    public void openDi()
     {
         try
         {

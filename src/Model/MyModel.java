@@ -52,7 +52,7 @@ public class MyModel
         this.stemmer = new PorterStemmer()
         {
         };
-        this.mDocInfo=new HashMap<String,int[]>();
+        this.mDocInfo= new HashMap<>();
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
     }
@@ -391,17 +391,16 @@ public class MyModel
         }
     }
 
-    public void fnSaveChache(String sPathForObjects)
+    public void fnSaveDicAndCache(String sPathForObjects)
     {
         this.indexer.fnWriteDicAndCache(sPathForObjects);
-
     }
 
     public void fnLoadObjects(String sPathForObjects)
     {
         this.indexer.setPathForObjects(sPathForObjects);
-        this.indexer.fnReadCache();
-        this.indexer.fnReadDictionary();
+        this.indexer.fnReadCache(sPathForObjects);
+        this.indexer.fnReadDictionary(sPathForObjects);
     }
 
 
