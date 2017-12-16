@@ -14,17 +14,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.PriorityQueue;
-import java.util.TreeMap;
+import java.util.*;
 
 
 /**
  * @author Shaked
  * @since 23-Nov-17
  */
-public class MyModel extends Observable {
+public class MyModel extends Observable
+{
 
     public String buildBDInfo;
     private ReadFile  readFile;
@@ -55,6 +53,7 @@ public class MyModel extends Observable {
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
     }
+
 
     /**
      * Build the data base and index from the path we got in the builder.
@@ -332,64 +331,6 @@ public class MyModel extends Observable {
         return iNumOfDocs;
     }
 
-    private PriorityQueue<MutablePair<String, Float>> fnCreateCahce()
-    {
-        HashMap<String, MutableTriple<Integer[], Float, Long>> hashMap = this.indexer.getDictionary();
-        PriorityQueue<MutablePair<String, Float>>              pairs   = new PriorityQueue<>((o1, o2) -> Float.compare(o1.getRight(), o2.getRight()));
-
-        for (String sTerm : hashMap.keySet())
-        {
-            pairs.add(new MutablePair<>(sTerm, hashMap.get(sTerm).getMiddle()));
-        }
-
-        return pairs;
-    }
-
-    private void fnWriteCache()
-    {
-        File file = new File("Resources\\Cache");
-        if (!file.exists())
-        {
-            try
-            {
-                file.createNewFile();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        BufferedWriter bf = null;
-        try
-        {
-            bf = new BufferedWriter(new FileWriter(file));
-            PriorityQueue<MutablePair<String, Float>> pairs = fnCreateCahce();
-            for (MutablePair<String, Float> pair : pairs)
-            {
-                bf.write(pair.getLeft());
-                bf.newLine();
-            }
-
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            if (null != bf)
-            {
-                try
-                {
-                    bf.close();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 
     public void fnSaveDicAndCache(String sPathForObjects)
     {
@@ -401,6 +342,99 @@ public class MyModel extends Observable {
         this.indexer.setPathForObjects(sPathForObjects);
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
+    }
+
+    public void fnShowCache()
+    {
+        File file = new File ("Resources\\cache");
+        if (!file.exists())
+        {
+            try
+            {
+                file.createNewFile();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        BufferedWriter bw = null;
+        try
+        {
+            bw = new BufferedWriter(new FileWriter(file));
+            this.indexer.fnWriteCache(bw);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (bw != null)
+            {
+                try
+                {
+                    bw.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void fnShowDictionary()
+    {
+        HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary = this.indexer.getDictionary();
+        PriorityQueue<MutablePair<String, Integer>> pairs = new PriorityQueue<>(Comparator.comparing(MutablePair::getLeft));
+        for (String sTerm : dictionary.keySet())
+        {
+            pairs.add(new MutablePair<>(sTerm, dictionary.get(sTerm).getLeft()[1]));
+        }
+
+        File file = new File ("Resources\\Dictionary");
+        if (!file.exists())
+        {
+            try
+            {
+                file.createNewFile();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        BufferedWriter bw = null;
+        try
+        {
+            bw = new BufferedWriter(new FileWriter(file));
+            for (MutablePair pair : pairs)
+            {
+                bw.write(pair.getLeft() + ", " + pair.getRight());
+                bw.newLine();
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (null == bw)
+            {
+                try
+                {
+                    bw.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 

@@ -772,11 +772,11 @@ public class MyIndexer
         String sPathForDictionary;
        if(bToStem)
        {
-           sPathForDictionary = sPathToRead + "dicStemmed";
+           sPathForDictionary = sPathToRead + "\\dicStemmed";
        }
        else
        {
-           sPathForDictionary = sPathToRead + "dicNonStemmed)";
+           sPathForDictionary = sPathToRead + "\\dicNonStemmed";
        }
 
        BufferedReader br = null;
@@ -832,11 +832,11 @@ public class MyIndexer
         String sPathForCache;
         if (bToStem)
         {
-            sPathForCache = sPathToRead + "cacheStemmed";
+            sPathForCache = sPathToRead + "\\cacheStemmed";
         }
         else
         {
-            sPathForCache = sPathToRead + "cacheNonStemmed";
+            sPathForCache = sPathToRead + "\\cacheNonStemmed";
         }
 
         BufferedReader br = null;
@@ -856,7 +856,7 @@ public class MyIndexer
                     int iEndIndex = sLine.indexOf(":");
                     String sTerm = sLine.substring(0, iEndIndex);
                     String sData = sLine.substring(iEndIndex + 1);
-                    String[] arrData = sData.split("!#");
+                    String[] arrData = sData.split("&&");
                     this.cache.put(sTerm, new MutablePair<>(arrData[0], Long.valueOf(arrData[1])));
                 }
             }
@@ -1023,13 +1023,13 @@ public class MyIndexer
         }
     }
 
-    private void fnWriteCache(BufferedWriter bf) throws IOException
+    public void fnWriteCache(BufferedWriter bf) throws IOException
     {
         for (String sTerm : this.cache.keySet())
         {
            MutablePair<String, Long> pair = this.cache.get(sTerm);
            bf.write(sTerm + ":");
-           bf.write(pair.toString());
+           bf.write(pair.getLeft() + "&&" + pair.getRight());
            bf.newLine();
         }
     }
@@ -1044,13 +1044,13 @@ public class MyIndexer
         String sPathForDic, sPathForCache;
         if (bToStem)
         {
-            sPathForDic = this.sPathForObject + "dicStemmed";
-            sPathForCache = this.sPathForObject + "cacheStemmed";
+            sPathForDic = this.sPathForObject + "\\dicStemmed";
+            sPathForCache = this.sPathForObject + "\\cacheStemmed";
         }
         else
         {
-            sPathForDic = this.sPathForObject + "dicNonStemmed)";
-            sPathForCache = this.sPathForObject + "cacheNonStemmed";
+            sPathForDic = this.sPathForObject + "\\dicNonStemmed";
+            sPathForCache = this.sPathForObject + "\\cacheNonStemmed";
         }
 
         return new String[]{sPathForDic, sPathForCache};
