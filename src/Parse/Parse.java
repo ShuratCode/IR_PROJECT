@@ -232,8 +232,7 @@ public class Parse
      * @return clean string
      */
   private String fnCleanS(String s){
-
-      while(s.length()>0 &&(s.charAt(0)==','||s.charAt(0)=='.' ||s.charAt(0)=='/' || s.charAt(0) == '"' || s.charAt(0) == '['||s.charAt(0) == ']')){
+      while(s.length()>0 &&(s.charAt(0)==','||s.charAt(0)=='.' ||s.charAt(0)=='/' || s.charAt(0) == '"' || s.charAt(0) == '['||s.charAt(0) == ']'||s.charAt(0) == '-')){
           s=s.substring(1);
 
       }
@@ -243,6 +242,16 @@ public class Parse
           s = s.substring(0, iSize - 1);
           iSize--;
       }
+      int idx;
+      if((idx=s.indexOf('-'))!=-1){
+          if(idx>s.length()-idx) {//take till idx
+              s=s.substring(0,idx);
+          }
+          else {
+              s=s.substring(idx+1);
+          }
+      }
+      if((idx=s.indexOf('-'))!=-1){ s="";}
     return s;
   }
 

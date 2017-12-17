@@ -119,8 +119,10 @@ public class Controller implements Observer {
     }
     public void openDi()  {
         try{
-            ProcessBuilder pb = new ProcessBuilder("Notepad.exe", sDiPath);//kinda works
-            pb.start();
+            Model.fnShowDictionary();
+            Runtime runtime = Runtime.getRuntime();
+            Process process = runtime.exec("Notepad.exe C:\\Users\\IBM_ADMIN\\IdeaProjects\\IR_Project\\resources\\Dictionary.txt");
+
         }
         catch (IOException e){
             e.printStackTrace();
@@ -129,8 +131,9 @@ public class Controller implements Observer {
     public void openCh(){
         if(isLoad){
             try{
-                ProcessBuilder pb = new ProcessBuilder("Notepad.exe", sChPath);//kinda works
-                pb.start();
+                Model.fnShowCache();
+                Runtime runtime = Runtime.getRuntime();
+                Process process = runtime.exec("Notepad.exe C:\\Users\\IBM_ADMIN\\IdeaProjects\\IR_Project\\Resources\\Cache.txt");
             }
             catch (IOException e){
              e.printStackTrace();
