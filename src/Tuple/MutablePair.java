@@ -49,6 +49,7 @@ public class MutablePair<L, R> implements Serializable
         this.right = right;
     }
 
+
     @Override
     public boolean equals(Object o)
     {

@@ -14,10 +14,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Observable;
-import java.util.TreeSet;
+import java.util.*;
 
 
 /**
@@ -134,7 +131,6 @@ public class MyModel extends Observable
             long   endTime   = System.currentTimeMillis();
             double totalTime = (endTime - startTime) / Math.pow(10, 3);
             buildBDInfo = "" + fnCreateEndMessage(totalTime);
-
         }
         catch (IOException e)
         {

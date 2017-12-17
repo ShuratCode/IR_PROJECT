@@ -24,7 +24,7 @@ public class MutableTriple<L, M, R> implements Serializable
     }
 
     /**
-     * @return left of this pair
+     * @return left of this triple
      */
     public L getLeft()
     {
@@ -32,7 +32,7 @@ public class MutableTriple<L, M, R> implements Serializable
     }
 
     /**
-     * @param left set new value to the left of this pair
+     * @param left set new value to the left of this triple
      */
     public void setLeft(L left)
     {
@@ -40,7 +40,7 @@ public class MutableTriple<L, M, R> implements Serializable
     }
 
     /**
-     * @return the right of this pair
+     * @return the right of this triple
      */
     public R getRight()
     {
@@ -48,19 +48,24 @@ public class MutableTriple<L, M, R> implements Serializable
     }
 
     /**
-     * @param right new value for the right of this pair
+     * @param right new value for the right of this triple
      */
     public void setRight(R right)
     {
         this.right = right;
     }
 
-
+    /**
+     * @return the middle of this triple
+     */
     public M getMiddle()
     {
         return this.middle;
     }
 
+    /**
+     * @param middle new value for this triple middle
+     */
     public void setMiddle(M middle)
     {
         this.middle = middle;
