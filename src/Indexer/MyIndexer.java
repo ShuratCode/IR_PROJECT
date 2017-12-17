@@ -39,16 +39,6 @@ public class MyIndexer
         this.bToStem = bToStem;
     }
 
-    public void setsPath(String sPath)
-    {
-        this.sPath = sPath;
-    }
-
-    public void setb2Stem(boolean b2Stem)
-    {
-        this.bToStem = b2Stem;
-    }
-
     /**
      * Set the total number of docs we parse
      *
@@ -97,7 +87,6 @@ public class MyIndexer
         }
     }
 
-
     /**
      * Creates a new line to be written in the temp posting file.
      * We are using the toString() method to get the line.
@@ -110,7 +99,6 @@ public class MyIndexer
         StringBuilder sbLineForTerm = new StringBuilder(term.toString());
         this.hashMapTempStrings.put(sTerm, sbLineForTerm);
     }
-
 
     /**
      * Update the hashMap for a specific term.
@@ -137,7 +125,7 @@ public class MyIndexer
     {
         fnCreateCache();
         File[]           files = fnGetAllTempFiles(); // Get all the file in the Posting dir
-        RandomAccessFile raf   = new RandomAccessFile(fnCreateConstPosing(), "rw");
+        RandomAccessFile raf   = new RandomAccessFile(fnCreateConstPosting(), "rw");
 
 
         if (null != files)
@@ -208,11 +196,20 @@ public class MyIndexer
 
     }
 
+    /**
+     * Add new entry to the cache. Will Save 0.3 percent of the term line, and the rest will write to the posting file
+     * and save the pointer.
+     *
+     * @param sMinTerm      the term to add to the cache
+     * @param sbLineToWrite the line of the term
+     * @param raf           RandomAccessFile to write the posting file
+     * @throws IOException in the write.
+     */
     private void fnAddCacheEntry(String sMinTerm, StringBuilder sbLineToWrite, RandomAccessFile raf) throws IOException
-    {StringBuilder sbResult = new StringBuilder();
-        String sLine = String.valueOf(sbLineToWrite);
-        String[] strings = sLine.split("!#");
-        PriorityQueue<MutablePair<String, Integer>> pairs = new PriorityQueue<>(Comparator.comparingInt(MutablePair::getRight));
+    {StringBuilder                                  sbResult = new StringBuilder();
+        String                                      sLine    = String.valueOf(sbLineToWrite);
+        String[]                                    strings  = sLine.split("!#");
+        PriorityQueue<MutablePair<String, Integer>> pairs    = new PriorityQueue<>(Comparator.comparingInt(MutablePair::getRight));
         for (int iIndex = 1, iSize = strings.length; iIndex < iSize; iIndex++)
         {
             MutablePair<String, Integer> pair = new MutablePair<>(strings[iIndex], Integer.valueOf(strings[iIndex + 1]));
@@ -220,8 +217,8 @@ public class MyIndexer
             pairs.add(pair);
         }
 
-        int iNumOfDocsToSave = (int) (pairs.size() * 0.3);
-        StringBuilder sbForCache = new StringBuilder();
+        int           iNumOfDocsToSave = (int) (pairs.size() * 0.3);
+        StringBuilder sbForCache       = new StringBuilder();
         for (int iNum = 0; iNum < iNumOfDocsToSave; iNum++)
         {
             MutablePair<String, Integer> pair = pairs.poll();
@@ -239,6 +236,12 @@ public class MyIndexer
 
     }
 
+    /**
+     * Add new Entry to the dictionary. will save the total tf, df, idf and pointer to the posting file
+     * @param sMinTerm the term to save
+     * @param sbLineToWrite the line to write to the posting file
+     * @return -1 if df is 1, else return 1
+     */
     private int fnAddDictionaryEntry(String sMinTerm, StringBuilder sbLineToWrite)
     {
         String[] strings  = String.valueOf(sbLineToWrite).split("!#");
@@ -516,7 +519,7 @@ public class MyIndexer
      * @return File object represent the new posting file
      * @throws IOException can throw exception in createNewFile() method
      */
-    private File fnCreateConstPosing() throws IOException
+    private File fnCreateConstPosting() throws IOException
     {
         String sConstFilePath      = this.sPath + "\\ConstPost.txt";
         File   fileConstantPosting = new File(sConstFilePath);
@@ -527,7 +530,6 @@ public class MyIndexer
 
         return fileConstantPosting;
     }
-
 
     /**
      * Gets all the paths of all the current posting files
@@ -543,7 +545,6 @@ public class MyIndexer
         }
         return null;
     }
-
 
     /**
      * Creates temp posting file
@@ -882,37 +883,17 @@ public class MyIndexer
 
     }
 
-
     /**
      * Reset the index
      */
     public void fnResetIndex()
     {
        fnDeletePosting();
-       fnDeleteCacheAndDictionary();
     }
 
-    private void fnDeleteCacheAndDictionary()
-    {
-        String   sPathForDic, sPathForCache;
-        String[] sPaths = fnGetPathForDicAndCache();
-        sPathForDic = sPaths[0];
-        sPathForCache = sPaths[1];
-
-        File fileForDictionary = new File(sPathForDic);
-        File fileForCache      = new File(sPathForCache);
-
-        if (fileForDictionary.exists())
-        {
-            fileForDictionary.delete();
-        }
-        if (fileForCache.exists())
-        {
-            fileForCache.delete();
-        }
-
-    }
-
+    /**
+     * Delete the posting file we saved after the last index run
+     */
     private void fnDeletePosting()
     {
         File file = new File(this.sPath);
@@ -931,7 +912,10 @@ public class MyIndexer
         }
     }
 
-
+    /**
+     * Get the dictionary now save in the memory
+     * @return dictionary
+     */
     public HashMap<String, MutableTriple<Integer[], Float, Long>> getDictionary()
     {
         return this.dictionary;
@@ -1006,12 +990,21 @@ public class MyIndexer
         return lResult;
     }
 
+    /**
+     * Set new value to bToStem
+     * @param bToStem true to use stemmer, else false
+     */
     public void setbToStem(boolean bToStem)
     {
         this.bToStem = bToStem;
     }
 
-
+    /**
+     * Writes the dictionary as a text file.
+     * @param bf Buffered Writer we use to write with. should be initialize to the file we want to write to.
+     *           The caller need to close this.
+     * @throws IOException BufferedWriter Exceptions.
+     */
     private void fnWriteDictionary(BufferedWriter bf) throws IOException
     {
         for (String sTerm : this.dictionary.keySet())
@@ -1023,22 +1016,37 @@ public class MyIndexer
         }
     }
 
+    /**
+     * Write the cache as text file
+     * @param bf use this to write the cache, should be initialize with the file we want to write to.
+     *           Caller need to close this.
+     * @throws IOException buffered writer exceptions
+     */
     public void fnWriteCache(BufferedWriter bf) throws IOException
     {
         for (String sTerm : this.cache.keySet())
         {
-           MutablePair<String, Long> pair = this.cache.get(sTerm);
-           bf.write(sTerm + ":");
-           bf.write(pair.getLeft() + "&&" + pair.getRight());
-           bf.newLine();
+            MutablePair<String, Long> pair = this.cache.get(sTerm);
+            bf.write(sTerm + ":");
+            bf.write(pair.getLeft() + "&&" + pair.getRight());
+            bf.newLine();
         }
     }
 
+    /**
+     * Set the path for saving the cache and dictionary
+     * @param pathForObjects directory. should be existed.
+     */
     public void setPathForObjects(String pathForObjects)
     {
         this.sPathForObject = pathForObjects;
     }
 
+    /**
+     * Build a string for path to save the dictionary and cache.
+     * @return full path to the file of the dictionary (first cell in the array), full path for the cache file
+     * (second cell in the array)
+     */
     private String[] fnGetPathForDicAndCache()
     {
         String sPathForDic, sPathForCache;

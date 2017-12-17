@@ -88,7 +88,7 @@ public class MyModel extends Observable
             }
 
             ArrayList<Term> listOfTerms = new ArrayList<>(); // All the terms in the file
-            //ArrayList<Term> listOfStemmed = new ArrayList<>();// For Stemmed word
+
             // Looping over all the documents in each file
             int listDocumentInFileLength = listDocumentInFile.size();
             iNumOfDocs += listDocumentInFileLength;
@@ -257,7 +257,7 @@ public class MyModel extends Observable
                 for (int i = 0, filesLength = files.length; i < filesLength; i++)
                 {
                     File file3 = files[i];
-                    if (file3.getName().equals("Cache Words"))
+                    if (file3.getName().equals("Cache Words") || file.getName().equals("Stemmed Cache Words"))
                     {
                         continue;
                     }

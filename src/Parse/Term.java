@@ -20,21 +20,35 @@ public class Term implements Comparable<Term>
         this.iType = iType;
     }
 
+    /**
+     * @return the name of the term, can be null
+     */
     public String getsName()
     {
         return this.sName;
     }
 
+    /**
+     *
+     * @param sName set a new name to tne term
+     */
     public void setsName(String sName)
     {
         this.sName = sName;
     }
 
+    /**
+     * raise the number of times shown in document by 1
+     */
     public void raisC()
     {
         iNumOfTimes++;
     }
 
+    /**
+     *
+     * @return the document
+     */
     public String getsDocName()
     {
         return this.sDocName;

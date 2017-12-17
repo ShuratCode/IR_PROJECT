@@ -29,11 +29,11 @@ public class Parse
    * @return arraylist of terms
    */
   public MutablePair<ArrayList<Term>,int[]> fnParseText1 (StringBuilder sbText , String docName){
-    String[] arrStringWords = sbText.toString().split("[ \t\n\r\f:;?!'`/|()<#>*&+=]");  // delimeters
-    String sWord ,dd , mm,yyyy , bigLetters, number;
-    int orgLen;
-    HashMap<String, Term> termMap=new HashMap<String, Term>();
-    boolean isDirty;
+    String[]                arrStringWords = sbText.toString().split("[ \t\n\r\f:;?!'`/|()<#>*&+=]");  // delimeters
+    String                  sWord , dd , mm, yyyy , bigLetters, number;
+    int                     orgLen;
+      HashMap<String, Term> termMap        = new HashMap<>();
+    boolean                 isDirty;
     for (int iIndex = 0, arrayStringWordsLength = arrStringWords.length; iIndex < arrayStringWordsLength; iIndex++)
     {
       sWord = arrStringWords[iIndex];
