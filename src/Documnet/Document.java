@@ -52,7 +52,7 @@ public class Document
     /**
      * @return the document name
      */
-    public String getsName()
+    public String getName()
     {
         return sName;
     }
@@ -60,12 +60,16 @@ public class Document
     /**
      * @return the text of the document
      */
-    public StringBuilder getSbText()
+    public StringBuilder getText()
     {
         return sbText;
     }
 
-    public void setSbText(StringBuilder sbText)
+    /**
+     * Set the text of the document
+     * @param sbText the text to save
+     */
+    public void setText(StringBuilder sbText)
     {
         this.sbText = sbText;
     }
