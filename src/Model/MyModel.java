@@ -131,6 +131,7 @@ public class MyModel extends Observable
             long   endTime   = System.currentTimeMillis();
             double totalTime = (endTime - startTime) / Math.pow(10, 3);
             buildBDInfo = "" + fnCreateEndMessage(totalTime);
+
         }
         catch (IOException e)
         {
@@ -326,6 +327,20 @@ public class MyModel extends Observable
     public void fnLoadObjects(String sPathForObjects)
     {
         this.indexer.setPathForObjects(sPathForObjects);
+        if (this.sPathForPosting.equals(""))
+        {
+            File file = new File(sPathForObjects + "cacheStemmed");
+            if (file.exists())
+            {
+                this.bToStem = true;
+                this.indexer.setbToStem(true);
+            }
+            else
+            {
+                this.bToStem = false;
+                this.indexer.setbToStem(false);
+            }
+        }
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
     }
@@ -428,7 +443,6 @@ public class MyModel extends Observable
             }
         }
     }
-
 
 
 }
