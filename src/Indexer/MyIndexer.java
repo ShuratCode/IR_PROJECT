@@ -172,7 +172,7 @@ public class MyIndexer {
             }
             fnCloseBufferReader(bfrForFiles);
 
-            fnDeleteTempFiles(files);
+            //fnDeleteTempFiles(files);
             raf.close();
 
             fnWriteTemp();
