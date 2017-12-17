@@ -33,9 +33,15 @@ public class MyModel extends Observable
     private PorterStemmer     stemmer;
     private boolean           bToStem;
     private int               iNumOfDocs, iNumOfParts;
-
     public HashMap<String,int[]> mDocInfo;
 
+    /**
+     * Constructor. will create a new folder name Posting in the path to keep all the files
+     * @param sRootPath path for the db
+     * @param bToStem do we use stemmer or not
+     * @param sPathForPosting path to where we save the posting files
+     * @param iNumOfParts how many parts we divide the db for reading.
+     */
     public MyModel(String sRootPath, boolean bToStem, String sPathForPosting, int iNumOfParts)
     {
         this.sRootPath = sRootPath;
@@ -46,14 +52,11 @@ public class MyModel extends Observable
         String sPathForIndexer = fnCreateFolder();
         this.indexer = new MyIndexer(sPathForIndexer, bToStem);
         this.arrayStringFilesPath = new ArrayList<>();
-        this.stemmer = new PorterStemmer()
-        {
-        };
+        this.stemmer = new PorterStemmer();
         this.mDocInfo= new HashMap<>();
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
     }
-
 
     /**
      * Build the data base and index from the path we got in the builder.
@@ -92,8 +95,8 @@ public class MyModel extends Observable
 
             for (int iIndex2 = 0; iIndex2 < listDocumentInFileLength; iIndex2++)
             {
-                StringBuilder sbTextToParse = listDocumentInFile.get(iIndex2).getSbText();
-                StringBuilder sbDocName     = new StringBuilder(listDocumentInFile.get(iIndex2).getsName());
+                StringBuilder sbTextToParse = listDocumentInFile.get(iIndex2).getText();
+                StringBuilder sbDocName     = new StringBuilder(listDocumentInFile.get(iIndex2).getName());
                 sbDocName.deleteCharAt(0);
                 sbDocName.deleteCharAt(sbDocName.length() - 1);
                 MutablePair<ArrayList<Term>,int[]> m=parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
@@ -194,7 +197,6 @@ public class MyModel extends Observable
         }
         return sResult;
     }
-
 
     /**
      * this function will get all the files in the path we got in the builder
@@ -297,22 +299,6 @@ public class MyModel extends Observable
     }
 
     /**
-     * @return dictionary with term and total tf
-     */
-    public TreeMap<String, Integer> fnGetDictionary()
-    {
-        TreeMap<String, Integer>                               treeMap    = new TreeMap<>();
-        HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary = this.indexer.getDictionary();
-        for (String sTerm : dictionary.keySet())
-        {
-            treeMap.put(sTerm, dictionary.get(sTerm).getLeft()[1]);
-        }
-
-        return treeMap;
-    }
-
-
-    /**
      * Set the boolean true if we need to use stemmer and false if we don't need to use stemmer
      *
      * @param bToStem to stem or not to stem
@@ -324,19 +310,19 @@ public class MyModel extends Observable
     }
 
     /**
-     * @return the total number of docs we parse
+     * Save the Dictionary and Cache in a specific path
+     * @param sPathForObjects where to save the files
      */
-    public int getiNumOfDocs()
-    {
-        return iNumOfDocs;
-    }
-
-
     public void fnSaveDicAndCache(String sPathForObjects)
     {
         this.indexer.fnWriteDicAndCache(sPathForObjects);
     }
 
+    /**
+     * Load the dictionary and cache from a path.
+     * The files needed to be in specific form and in specific name.
+     * @param sPathForObjects from where to load the files
+     */
     public void fnLoadObjects(String sPathForObjects)
     {
         this.indexer.setPathForObjects(sPathForObjects);
@@ -344,6 +330,9 @@ public class MyModel extends Observable
         this.indexer.fnReadDictionary(sPathForObjects);
     }
 
+    /**
+     * Save the cache in text file under the Resources folder for show on screen.
+     */
     public void fnShowCache()
     {
         File file = new File ("Resources\\Cache.txt");
@@ -385,6 +374,9 @@ public class MyModel extends Observable
         }
     }
 
+    /**
+     * Save the dictionary under the Resources folder for show on screen
+     */
     public void fnShowDictionary()
     {
         HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary = this.indexer.getDictionary();
