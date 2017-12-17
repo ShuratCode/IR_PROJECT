@@ -92,7 +92,7 @@ public class Parse
             bigLetters = sWord;
 
                 while (iIndex + 1 < arrayStringWordsLength ) {// saves each word
-                    if (!this.hashSetStopWords.contains(sWord = sWord.toLowerCase())) {
+                    if (!this.hashSetStopWords.contains(sWord = sWord.toLowerCase())&& !Objects.equals(sWord, "")) {
                         if (termMap.containsKey(sWord)) {
                             termMap.get(sWord).raisC();
                         } else {
@@ -113,7 +113,7 @@ public class Parse
                         bigLetters += (" " + sWord);
                     } else break;
                 }
-                if (bigLetters.length() != sWord.length()) {// save the hole thing if needed
+                if (bigLetters.length() != sWord.length()&& !Objects.equals(bigLetters, "")) {// save the hole thing if needed
                     if (termMap.containsKey(bigLetters = bigLetters.toLowerCase())) {
                         termMap.get(bigLetters).raisC();
                     } else {
@@ -251,6 +251,17 @@ public class Parse
               s=s.substring(idx+1);
           }
       }
+      while(s.length()>0 &&(s.charAt(0)==','||s.charAt(0)=='.' ||s.charAt(0)=='/' || s.charAt(0) == '"' || s.charAt(0) == '['||s.charAt(0) == ']'||s.charAt(0) == '-')){
+          s=s.substring(1);
+
+      }
+      iSize = s.length();
+      while (iSize > 0 && (s.charAt(iSize - 1) == ',' ||s.charAt(iSize - 1)=='.' ||s.charAt(iSize - 1)=='/' || s.charAt(iSize -1) == '"' || s.charAt(iSize - 1) == ']'||s.charAt(iSize - 1) == '['))
+      {
+          s = s.substring(0, iSize - 1);
+          iSize--;
+      }
+
       if((idx=s.indexOf('-'))!=-1){ s="";}
     return s;
   }
