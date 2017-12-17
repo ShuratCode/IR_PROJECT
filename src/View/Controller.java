@@ -102,6 +102,10 @@ public class Controller implements Observer {
             Model=new MyModel("",false,"",10);
             bStartIndexing.setDisable(true);
             Model.fnLoadObjects(selectedDirectory.getPath());
+            bSaveDC.setDisable(false);
+            bShowCache.setDisable(false);
+            bShowDic.setDisable(false);
+            isLoad=true;
         }
     }
 
@@ -118,6 +122,7 @@ public class Controller implements Observer {
         tOut.setText(selectedDirectory.getPath());
     }
     public void openDi()  {
+        if(isLoad){
         try{
             Model.fnShowDictionary();
             Runtime runtime = Runtime.getRuntime();
@@ -127,7 +132,7 @@ public class Controller implements Observer {
         catch (IOException e){
             e.printStackTrace();
         }
-    }
+    } }
     public void openCh(){
         if(isLoad){
             try{
