@@ -28,9 +28,9 @@
                     </rowConstraints>
                     <children>
                         <Label prefHeight="23.0" prefWidth="69.0" text="Root Path:"/>
-                        <TextField id="tIn" fx:id="tIn" text="C:\Users\IBM_ADMIN\IdeaProjects\test1\check"
+                        <TextField id="tIn" fx:id="tIn" text=""
                                    GridPane.columnIndex="1"/>
-                        <TextField id="tOut" fx:id="tOut" text="C:\Users\IBM_ADMIN\IdeaProjects\test1"
+                        <TextField id="tOut" fx:id="tOut" text=""
                                    GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                         <Label prefHeight="17.0" prefWidth="100.0" text="Destination Path:" GridPane.rowIndex="1"/>
                         <CheckBox fx:id="cStemer" mnemonicParsing="false" text="Stemer" GridPane.rowIndex="2"/>
