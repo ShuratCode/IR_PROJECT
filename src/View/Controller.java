@@ -90,7 +90,7 @@ public class Controller implements Observer {
             chooser.setTitle("Select Directory ");
             File selectedDirectory = chooser.showDialog(stage);
             if(selectedDirectory!=null){
-                Model.fnSaveChache(selectedDirectory.getPath());
+                Model.fnSaveDicAndCache(selectedDirectory.getPath());
             }
         }
     }

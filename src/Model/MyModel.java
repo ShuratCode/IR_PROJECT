@@ -21,23 +21,23 @@ import java.util.*;
  * @author Shaked
  * @since 23-Nov-17
  */
-public class MyModel extends Observable {
-
-    private ReadFile readFile;
-    private Parse parse;
-    private MyIndexer indexer;
-    private String sRootPath, sStopWordsPath, sPathForPosting;
-    private ArrayList<String> arrayStringFilesPath;
-    private PorterStemmer stemmer;
-    private boolean bToStem;
-    private int iNumOfDocs, iNumOfParts;
+public class MyModel extends Observable
+{
 
     public String buildBDInfo;
+    private ReadFile  readFile;
+    private Parse     parse;
+    private MyIndexer indexer;
+    private String    sRootPath, sStopWordsPath, sPathForPosting;
+    private ArrayList<String> arrayStringFilesPath;
+    private PorterStemmer     stemmer;
+    private boolean           bToStem;
+    private int               iNumOfDocs, iNumOfParts;
+
     public HashMap<String,int[]> mDocInfo;
 
-
-
-    public MyModel(String sRootPath, boolean bToStem, String sPathForPosting, int iNumOfParts) {
+    public MyModel(String sRootPath, boolean bToStem, String sPathForPosting, int iNumOfParts)
+    {
         this.sRootPath = sRootPath;
         this.readFile = new ReadFile();
         this.parse = new Parse();
@@ -46,35 +46,41 @@ public class MyModel extends Observable {
         String sPathForIndexer = fnCreateFolder();
         this.indexer = new MyIndexer(sPathForIndexer, bToStem);
         this.arrayStringFilesPath = new ArrayList<>();
-        this.stemmer = new PorterStemmer() {
+        this.stemmer = new PorterStemmer()
+        {
         };
-        this.mDocInfo=new HashMap<String,int[]>();
+        this.mDocInfo= new HashMap<>();
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
     }
+
 
     /**
      * Build the data base and index from the path we got in the builder.
      * first we will collect all the files paths, and then will send each path to the readFile.
      * after the reading we will send each document to parsing.
      */
-    public void fnBuildDB() {
+    public void fnBuildDB()
+    {
         long startTime = System.currentTimeMillis();
         fnCreateFolder();
         fnFindFilesInDB();
         parse.setHashSetStopWords(readFile.fnReadStopWords(this.sStopWordsPath));
-        int iNumOfFiles = this.arrayStringFilesPath.size(); // Num of files in the db
-        int iPercent = iNumOfFiles / this.iNumOfParts;
+        int                 iNumOfFiles        = this.arrayStringFilesPath.size(); // Num of files in the db
+        int                 iPercent           = iNumOfFiles / this.iNumOfParts;
         ArrayList<Document> listDocumentInFile = new ArrayList<>();
         // Looping over all the files in the db
-        for (int iIndex = 0, iItr = 0, iTimeToRead = 0; iIndex < iNumOfFiles; iIndex++, iItr++) {
+        for (int iIndex = 0, iItr = 0, iTimeToRead = 0; iIndex < iNumOfFiles; iIndex++, iItr++)
+        {
             File fileToRead = new File(this.arrayStringFilesPath.get(iIndex));
             listDocumentInFile.addAll(readFile.fnReadFile(fileToRead)); // All the documents in a file
-            if (iItr < iPercent && iTimeToRead < 8) {
+            if (iItr < iPercent && iTimeToRead < 8)
+            {
                 continue;
             }
 
-            if ((iTimeToRead == (this.iNumOfParts - 1)) && (iIndex < (iNumOfFiles - 1))) {
+            if ((iTimeToRead == (this.iNumOfParts - 1)) && (iIndex < (iNumOfFiles - 1)))
+            {
                 continue;
             }
 
@@ -84,19 +90,23 @@ public class MyModel extends Observable {
             int listDocumentInFileLength = listDocumentInFile.size();
             iNumOfDocs += listDocumentInFileLength;
 
-            for (int iIndex2 = 0; iIndex2 < listDocumentInFileLength; iIndex2++) {
+            for (int iIndex2 = 0; iIndex2 < listDocumentInFileLength; iIndex2++)
+            {
                 StringBuilder sbTextToParse = listDocumentInFile.get(iIndex2).getSbText();
-                StringBuilder sbDocName = new StringBuilder(listDocumentInFile.get(iIndex2).getsName());
+                StringBuilder sbDocName     = new StringBuilder(listDocumentInFile.get(iIndex2).getsName());
                 sbDocName.deleteCharAt(0);
                 sbDocName.deleteCharAt(sbDocName.length() - 1);
                 MutablePair<ArrayList<Term>,int[]> m=parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
                 listOfTerms.addAll(m.getLeft());
                 mDocInfo.put(String.valueOf(sbDocName),m.getRight());
             }
-            if (this.bToStem) {
-                for (int iIndex3 = 0, iSize = listOfTerms.size(); iIndex3 < iSize; iIndex3++) {
+            if (this.bToStem)
+            {
+                for (int iIndex3 = 0, iSize = listOfTerms.size(); iIndex3 < iSize; iIndex3++)
+                {
                     Term termTemp = listOfTerms.get(iIndex3);
-                    if (termTemp.getType() == 1) {
+                    if (termTemp.getType() == 1)
+                    {
                         String sStemmed = this.stemmer.stemTerm(termTemp.getsName());
                         termTemp.setsName(sStemmed);
 
@@ -112,14 +122,15 @@ public class MyModel extends Observable {
         }
 
         indexer.setTotalDocs(iNumOfDocs);
-        try {
+        try
+        {
             indexer.fnMergePostings();
-            long endTime = System.currentTimeMillis();
+            long   endTime   = System.currentTimeMillis();
             double totalTime = (endTime - startTime) / Math.pow(10, 3);
-            fnWriteCache();
-            buildBDInfo=""+fnCreateEndMessage(totalTime);
-
-        } catch (IOException e) {
+            buildBDInfo = "" + fnCreateEndMessage(totalTime);
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
 
@@ -132,7 +143,8 @@ public class MyModel extends Observable {
      *
      * @param dTotalTime the total running time in seconds
      */
-    private StringBuilder fnCreateEndMessage(double dTotalTime) {
+    private StringBuilder fnCreateEndMessage(double dTotalTime)
+    {
         StringBuilder sbEndMessage = new StringBuilder("");
         sbEndMessage.append("The number of document indexed is: ").append(iNumOfDocs).append("\n");
         sbEndMessage.append("The size of index in bytes is: ").append(this.indexer.fnGetIndexSize()).append("\n");
@@ -146,26 +158,37 @@ public class MyModel extends Observable {
      *
      * @return path for the folder who created
      */
-    private String fnCreateFolder() {
-        File file = new File(sPathForPosting);
+    private String fnCreateFolder()
+    {
+        File   file = new File(sPathForPosting);
         String sResult;
-        if (!file.exists()) {
+        if (!file.exists())
+        {
             file.mkdir();
         }
-        if (this.bToStem) {
+        if (this.bToStem)
+        {
             sResult = sPathForPosting + "\\Stemmed";
             File file2 = new File(sResult);
-            if (!file2.exists()) {
+            if (!file2.exists())
+            {
                 file2.mkdir();
-            } else {
+            }
+            else
+            {
                 fnClearFolder(file2);
             }
-        } else {
+        }
+        else
+        {
             sResult = sPathForPosting + "\\Non Stemmed";
             File file2 = new File(sResult);
-            if (!file2.exists()) {
+            if (!file2.exists())
+            {
                 file2.mkdir();
-            } else {
+            }
+            else
+            {
                 fnClearFolder(file2);
             }
         }
@@ -176,29 +199,40 @@ public class MyModel extends Observable {
     /**
      * this function will get all the files in the path we got in the builder
      */
-    private void fnFindFilesInDB() {
-        File fileDirToRead = new File(this.sRootPath);
-        File[] files = fileDirToRead.listFiles(); // Use this method to make sure we will not get an npe in listFiles() method
-        if (null != files) {
-            for (int iIndex = 0, filesLength = files.length; iIndex < filesLength; iIndex++) {
+    private void fnFindFilesInDB()
+    {
+        File   fileDirToRead = new File(this.sRootPath);
+        File[] files         = fileDirToRead.listFiles(); // Use this method to make sure we will not get an npe in listFiles() method
+        if (null != files)
+        {
+            for (int iIndex = 0, filesLength = files.length; iIndex < filesLength; iIndex++)
+            {
                 File fileEntry = files[iIndex];
-                if (null != fileEntry && fileEntry.isDirectory()) {
+                if (null != fileEntry && fileEntry.isDirectory())
+                {
                     File[] files2 = fileEntry.listFiles();
-                    if (null != files2) {
+                    if (null != files2)
+                    {
                         int files2Length = files2.length;
 
-                        for (int i = 0; i < files2Length; i++) {
+                        for (int i = 0; i < files2Length; i++)
+                        {
                             this.arrayStringFilesPath.add(files2[i].getAbsolutePath());
                         }
                     }
-                } else {
-                    if (null != fileEntry) {
+                }
+                else
+                {
+                    if (null != fileEntry)
+                    {
                         this.sStopWordsPath = fileEntry.getAbsolutePath();
                     }
 
                 }
             }
-        } else {
+        }
+        else
+        {
             System.out.println("The root path you gave is not a folder");
         }
     }
@@ -206,17 +240,22 @@ public class MyModel extends Observable {
     /**
      * Reset the whole db
      */
-    public void fnReset() {
+    public void fnReset()
+    {
         String sPathForIndexer = fnCreateFolder();
         this.indexer.fnResetIndex();
-        File file = new File(this.sPathForPosting);
+        File file  = new File(this.sPathForPosting);
         File file2 = new File("Resources");
-        if (file2.exists()) {
+        if (file2.exists())
+        {
             File[] files = file2.listFiles();
-            if (null != files) {
-                for (int i = 0, filesLength = files.length; i < filesLength; i++) {
+            if (null != files)
+            {
+                for (int i = 0, filesLength = files.length; i < filesLength; i++)
+                {
                     File file3 = files[i];
-                    if (file3.getName().equals("Cache Words")) {
+                    if (file3.getName().equals("Cache Words"))
+                    {
                         continue;
                     }
                     file3.delete();
@@ -234,15 +273,22 @@ public class MyModel extends Observable {
      *
      * @param file objects represent the folder
      */
-    private void fnClearFolder(File file) {
+    private void fnClearFolder(File file)
+    {
         File[] files = file.listFiles();
-        if (files != null) {
-            if (files.length != 0) {
-                for (int iIndex = 0, iSize = files.length; iIndex < iSize; iIndex++) {
+        if (files != null)
+        {
+            if (files.length != 0)
+            {
+                for (int iIndex = 0, iSize = files.length; iIndex < iSize; iIndex++)
+                {
                     File file2 = files[iIndex];
-                    if (!file2.isDirectory()) {
+                    if (!file2.isDirectory())
+                    {
                         file2.delete();
-                    } else {
+                    }
+                    else
+                    {
                         fnClearFolder(file2);
                     }
                 }
@@ -253,10 +299,12 @@ public class MyModel extends Observable {
     /**
      * @return dictionary with term and total tf
      */
-    public TreeMap<String, Integer> fnGetDictionary() {
-        TreeMap<String, Integer> treeMap = new TreeMap<>();
+    public TreeMap<String, Integer> fnGetDictionary()
+    {
+        TreeMap<String, Integer>                               treeMap    = new TreeMap<>();
         HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary = this.indexer.getDictionary();
-        for (String sTerm : dictionary.keySet()) {
+        for (String sTerm : dictionary.keySet())
+        {
             treeMap.put(sTerm, dictionary.get(sTerm).getLeft()[1]);
         }
 
@@ -269,7 +317,8 @@ public class MyModel extends Observable {
      *
      * @param bToStem to stem or not to stem
      */
-    public void setbToStem(boolean bToStem) {
+    public void setbToStem(boolean bToStem)
+    {
         this.bToStem = bToStem;
         this.indexer.setbToStem(bToStem);
     }
@@ -277,76 +326,117 @@ public class MyModel extends Observable {
     /**
      * @return the total number of docs we parse
      */
-    public int getiNumOfDocs() {
+    public int getiNumOfDocs()
+    {
         return iNumOfDocs;
     }
 
-    private PriorityQueue<MutablePair<String, Float>> fnCreateCahce() {
-        HashMap<String, MutableTriple<Integer[], Float, Long>> hashMap = this.indexer.getDictionary();
-        PriorityQueue<MutablePair<String, Float>> pairs = new PriorityQueue<>((o1, o2) -> Float.compare(o1.getRight(), o2.getRight()));
 
-        for (String sTerm : hashMap.keySet()) {
-            pairs.add(new MutablePair<>(sTerm, hashMap.get(sTerm).getMiddle()));
-        }
-
-        return pairs;
+    public void fnSaveDicAndCache(String sPathForObjects)
+    {
+        this.indexer.fnWriteDicAndCache(sPathForObjects);
     }
 
-    private void fnWriteCache() {
-        File file = new File("Resources\\Cache");
-        if (!file.exists()) {
-            try {
+    public void fnLoadObjects(String sPathForObjects)
+    {
+        this.indexer.setPathForObjects(sPathForObjects);
+        this.indexer.fnReadCache(sPathForObjects);
+        this.indexer.fnReadDictionary(sPathForObjects);
+    }
+
+    public void fnShowCache()
+    {
+        File file = new File ("Resources\\Cache.txt");
+        if (!file.exists())
+        {
+            try
+            {
                 file.createNewFile();
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 e.printStackTrace();
             }
         }
-        BufferedWriter bf = null;
-        try {
-            bf = new BufferedWriter(new FileWriter(file));
-            PriorityQueue<MutablePair<String, Float>> pairs = fnCreateCahce();
-            for (MutablePair<String, Float> pair : pairs) {
-                bf.write(pair.getLeft());
-                bf.newLine();
-            }
 
-        } catch (IOException e) {
+        BufferedWriter bw = null;
+        try
+        {
+            bw = new BufferedWriter(new FileWriter(file));
+            this.indexer.fnWriteCache(bw);
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
-        } finally {
-            if (null != bf) {
-                try {
-                    bf.close();
-                } catch (IOException e) {
+        }
+        finally
+        {
+            if (bw != null)
+            {
+                try
+                {
+                    bw.close();
+                }
+                catch (IOException e)
+                {
                     e.printStackTrace();
                 }
             }
         }
     }
 
-    public void fnSaveChache(String sPathForObjects) {
-        this.indexer.fnWriteDicAndCache(sPathForObjects);
-
-    }
-
-    public void fnLoadObjects(String sPathForObjects) {
-        this.indexer.setPathForObjects(sPathForObjects);
-        this.indexer.fnReadCache();
-        this.indexer.fnReadDictionary();
-    }
-
-    public HashMap<String, String> getCache() {
-        return this.indexer.getCache();
-    }
-
-    public TreeMap<String, Integer> getDictionary() {
-        TreeMap<String, Integer> treeMap = new TreeMap<>();
-        HashMap<String, MutableTriple<Integer[], Float, Long>> hashMap = this.indexer.getDictionary();
-        for (String sTerm : hashMap.keySet()) {
-            treeMap.put(sTerm, hashMap.get(sTerm).getLeft()[1]);
+    public void fnShowDictionary()
+    {
+        HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary = this.indexer.getDictionary();
+        PriorityQueue<MutablePair<String, Integer>> pairs = new PriorityQueue<>(Comparator.comparing(MutablePair::getLeft));
+        for (String sTerm : dictionary.keySet())
+        {
+            pairs.add(new MutablePair<>(sTerm, dictionary.get(sTerm).getLeft()[1]));
         }
 
-        return treeMap;
+        File file = new File ("Resources\\Dictionary.txt");
+        if (!file.exists())
+        {
+            try
+            {
+                file.createNewFile();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        BufferedWriter bw = null;
+        try
+        {
+            bw = new BufferedWriter(new FileWriter(file));
+            for (MutablePair pair : pairs)
+            {
+                bw.write(pair.getLeft() + ", " + pair.getRight());
+                bw.newLine();
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (null == bw)
+            {
+                try
+                {
+                    bw.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
+
 
 
 }
