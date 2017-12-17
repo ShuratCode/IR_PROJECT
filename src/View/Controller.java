@@ -1,7 +1,6 @@
 package View;
 
 import Model.MyModel;
-import com.sun.rmi.rmid.ExecPermission;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -81,6 +80,7 @@ public class Controller implements Observer {
             bSaveDC.setDisable(true);
             bShowCache.setDisable(true);
             bShowDic.setDisable(true);
+            isLoad=false;
         }
 
     }
@@ -99,6 +99,8 @@ public class Controller implements Observer {
         chooser.setTitle("Select Directory ");
         File selectedDirectory = chooser.showDialog(stage);
         if(selectedDirectory!=null){
+            Model=new MyModel("",false,"",10);
+            bStartIndexing.setDisable(true);
             Model.fnLoadObjects(selectedDirectory.getPath());
         }
     }
@@ -115,7 +117,7 @@ public class Controller implements Observer {
         File selectedDirectory = chooser.showDialog(stage);
         tOut.setText(selectedDirectory.getPath());
     }
-    public void openDi() throws IOException {
+    public void openDi()  {
         try{
             ProcessBuilder pb = new ProcessBuilder("Notepad.exe", sDiPath);//kinda works
             pb.start();
