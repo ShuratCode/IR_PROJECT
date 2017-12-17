@@ -17,21 +17,33 @@ public class MutablePair<L, R> implements Serializable
         this.right = right;
     }
 
+    /**
+     * @return the left of this pair
+     */
     public L getLeft()
     {
         return left;
     }
 
+    /**
+     * @param left new value for this left
+     */
     public void setLeft(L left)
     {
         this.left = left;
     }
 
+    /**
+     * @return the right of this pair
+     */
     public R getRight()
     {
         return right;
     }
 
+    /**
+     * @param right new value for this right
+     */
     public void setRight(R right)
     {
         this.right = right;

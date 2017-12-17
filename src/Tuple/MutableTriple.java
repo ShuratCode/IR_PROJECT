@@ -23,25 +23,33 @@ public class MutableTriple<L, M, R> implements Serializable
         this.middle = middle;
     }
 
-
+    /**
+     * @return left of this pair
+     */
     public L getLeft()
     {
         return this.left;
     }
 
-
+    /**
+     * @param left set new value to the left of this pair
+     */
     public void setLeft(L left)
     {
         this.left = left;
     }
 
-
+    /**
+     * @return the right of this pair
+     */
     public R getRight()
     {
         return this.right;
     }
 
-
+    /**
+     * @param right new value for the right of this pair
+     */
     public void setRight(R right)
     {
         this.right = right;
