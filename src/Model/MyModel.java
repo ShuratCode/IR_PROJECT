@@ -14,7 +14,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Observable;
+import java.util.TreeSet;
 
 
 /**
@@ -395,11 +398,7 @@ public class MyModel extends Observable
     public void fnShowDictionary()
     {
         HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary = this.indexer.getDictionary();
-        PriorityQueue<MutablePair<String, Integer>> pairs = new PriorityQueue<>(Comparator.comparing(MutablePair::getLeft));
-        for (String sTerm : dictionary.keySet())
-        {
-            pairs.add(new MutablePair<>(sTerm, dictionary.get(sTerm).getLeft()[1]));
-        }
+        TreeSet<String>                                        treeSet    = new TreeSet<>(dictionary.keySet());
 
         File file = new File ("Resources\\Dictionary.txt");
         if (!file.exists())
@@ -418,9 +417,10 @@ public class MyModel extends Observable
         try
         {
             bw = new BufferedWriter(new FileWriter(file));
-            for (MutablePair pair : pairs)
+            for (String sTerm : treeSet)
             {
-                bw.write(pair.getLeft() + ", " + pair.getRight());
+                MutableTriple<Integer[], Float, Long> triple = dictionary.get(sTerm);
+                bw.write(sTerm + ", " + triple.getLeft()[1]);
                 bw.newLine();
             }
         }

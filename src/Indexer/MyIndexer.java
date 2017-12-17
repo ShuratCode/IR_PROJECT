@@ -1024,7 +1024,8 @@ public class MyIndexer
      */
     public void fnWriteCache(BufferedWriter bf) throws IOException
     {
-        for (String sTerm : this.cache.keySet())
+        TreeSet<String> treeSet = new TreeSet<>(this.cache.keySet());
+        for (String sTerm : treeSet)
         {
             MutablePair<String, Long> pair = this.cache.get(sTerm);
             bf.write(sTerm + ":");

@@ -36,7 +36,6 @@ public class ReadFile
         return listFiles;
     }
 
-
     /**
      * Read the file of the stop words.
      *

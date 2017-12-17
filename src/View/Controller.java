@@ -121,7 +121,7 @@ public class Controller implements Observer {
         try{
             Model.fnShowDictionary();
             Runtime runtime = Runtime.getRuntime();
-            Process process = runtime.exec("Notepad.exe C:\\Users\\IBM_ADMIN\\IdeaProjects\\IR_Project\\resources\\Dictionary.txt");
+            Process process = runtime.exec("Notepad.exe Resources\\Dictionary.txt");
 
         }
         catch (IOException e){
@@ -133,7 +133,7 @@ public class Controller implements Observer {
             try{
                 Model.fnShowCache();
                 Runtime runtime = Runtime.getRuntime();
-                Process process = runtime.exec("Notepad.exe C:\\Users\\IBM_ADMIN\\IdeaProjects\\IR_Project\\Resources\\Cache.txt");
+                Process process = runtime.exec("Notepad.exe Resources\\Cache.txt");
             }
             catch (IOException e){
              e.printStackTrace();
