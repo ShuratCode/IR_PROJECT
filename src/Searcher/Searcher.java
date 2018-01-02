@@ -6,17 +6,16 @@ import Stemmer.PorterStemmer;
 import Tuple.MutablePair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-import sun.reflect.generics.tree.Tree;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 public class Searcher
 {
@@ -25,13 +24,14 @@ public class Searcher
     private PorterStemmer stemmer;
 
 
-
     public Searcher(Parse parse, boolean bToStem, PorterStemmer stemmer)
     {
         this.parse = parse;
         this.bToStem = bToStem;
         this.stemmer = stemmer;
+
     }
+
 
     /**
      * Will get query and parse it to separate words.
@@ -74,39 +74,37 @@ public class Searcher
     public String[] fnGetWordsFromWikipedia(StringBuilder sQuery)
     {
 
-        ArrayList<String> stringArrayList = new ArrayList<>();
         try
         {
 
-            Document doc  = Jsoup.connect("http://en.wikipedia.org/wiki/" + sQuery).get();
-            Element  body = doc.body();
-            countWords(body.text());
-            Elements bold = body.select("b");
-            for (int i = 0, boldSize = bold.size(); i < boldSize; i++)
+            Document doc = Jsoup.connect("https://en.wikipedia.org/w/api.php?format=xml&action=query&prop=extracts&titles=" + sQuery + "&redirects=true").get();
+            doc = Jsoup.parse(doc.text());
+            ArrayList<String> words = countWords(doc.text());
+            if (null != words)
             {
-                Element element = bold.get(i);
-
-                if (element.childNodeSize() == 1)
+                String[] sresult = new String[5];
+                for (int i = 0, wordsSize = words.size(), iIndex = 0; i < wordsSize && iIndex < 5; i++)
                 {
-                    Node   e      = element.childNode(0);
-                    String sValue = e.toString();
-                    if (sValue.length() > 2 && !sValue.contains("<a"))
+                    String word = words.get(i);
+                    if (word.contentEquals(sQuery))
                     {
-                        stringArrayList.add(sValue);
+                        continue;
                     }
+                    sresult[iIndex] = word;
+                    iIndex++;
                 }
 
+                return sresult;
             }
-            Elements links = body.select("a");
-            System.out.println();
-
+            return null;
         }
         catch (IOException e)
         {
             e.printStackTrace();
+            return null;
         }
 
-        return null;
+
     }
 
     public void setbWikipedia(boolean bWikipedia)
@@ -116,39 +114,66 @@ public class Searcher
 
     //TODO: get query and parse it. return query words.
 
-    private ArrayList<Map.Entry<String, Integer>> countWords(String text)
+    private ArrayList<String> countWords(String text)
     {
         try
         {
             HashMap<String, Integer> countmap = new HashMap<>();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8))));
-            String sLine;
+            BufferedReader           reader   = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8))));
+            String                   sLine;
             while ((sLine = reader.readLine()) != null)
             {
+
                 String[] words = sLine.split("[^A-ZÃƒâ€¦Ãƒâ€žÃƒâ€“a-zÃƒÂ¥ÃƒÂ¤ÃƒÂ¶]+");
+
                 for (int i = 0, wordsLength = words.length; i < wordsLength; i++)
                 {
                     String word = words[i];
+                    word = word.toLowerCase();
+                    word = fnGetNewForm(word);
                     if ("".equals(word) || this.parse.fnIsStopWords(word))
                     {
                         continue;
                     }
-                    ArrayList<Term> terms = this.parse.fnParseText1(new StringBuilder(word), "").getLeft();
-                    if (!countmap.containsKey(word))
-                    {
-                        countmap.put(word, 0);
-                    }
-                    else
+
+                    if (countmap.containsKey(word))
                     {
                         Integer iNewValue = countmap.get(word) + 1;
                         countmap.put(word, iNewValue);
                     }
+                    else
+                    {
+                        if (word.charAt(word.length() - 1) == 's')
+                        {
+                            String sSingle = word.substring(0, word.length() - 1);
+                            if (countmap.containsKey(sSingle))
+                            {
+                                Integer iNewValue = countmap.get(sSingle) + 1;
+                                countmap.put(sSingle, iNewValue);
+                            }
+                            else
+                            {
+                                countmap.put(word, 1);
+                            }
+                        }
+                        else
+                        {
+                            countmap.put(word, 1);
+                        }
+
+                    }
+
                 }
             }
             reader.close();
             ArrayList<Map.Entry<String, Integer>> sorted = new ArrayList<>(countmap.entrySet());
-            Collections.sort(sorted, (o1, o2) -> o2.getValue() - o1.getValue());
-            return sorted;
+            sorted.sort((o1, o2) -> o2.getValue() - o1.getValue());
+            ArrayList<String> result = new ArrayList<>(sorted.size());
+            for (Map.Entry<String, Integer> entry : sorted)
+            {
+                result.add(entry.getKey());
+            }
+            return result;
         }
         catch (IOException e)
         {
@@ -158,9 +183,20 @@ public class Searcher
 
     }
 
+    private String fnGetNewForm(String word)
+    {
+        switch (word)
+        {
+            case "humans":
+                return "human";
+        }
+        return word;
+    }
+
     public void fnSetStopWords(HashSet<String> stopWords)
     {
         this.parse.setHashSetStopWords(stopWords);
     }
+
 
 }
