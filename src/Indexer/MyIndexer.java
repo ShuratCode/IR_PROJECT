@@ -18,9 +18,12 @@ public class MyIndexer
     private int                                                    iNumOfPostingFiles; // Count the number of temp posting files we create
     private TreeMap<String, StringBuilder>                         hashMapTempStrings; // will use to save the line of each term to be to be written to a posting file
     private int                                                    iTotalDocs;
-    private HashMap<String, MutablePair<String, Long>>                                cache;
+    private HashMap<String, MutablePair<String, Long>>             cache;
     private String                                                 sPath, sPathForObject;
-    private boolean bToStem;
+    private boolean                 bToStem;
+    private HashMap<String, Double> hashMapDocsGrade;
+
+
 
 
     /**
@@ -37,6 +40,7 @@ public class MyIndexer
         this.sPath = sPath;
         this.sPathForObject = null;
         this.bToStem = bToStem;
+        this.hashMapDocsGrade = new HashMap<>();
     }
 
     /**
@@ -159,10 +163,12 @@ public class MyIndexer
                 String             sMinTerm               = fnGetMinTerm(arrTerms, iIndex, iSize);
                 ArrayList<Integer> arrayListSmallestIndex = fnGetSmallest(arrFilesDone, sMinTerm, arrTerms, iIndex, iSize);
                 StringBuilder      sbLineToWrite          = fnCreateConstLine(arrayStringLines, arrayListSmallestIndex);
+
                 lPointer = raf.getFilePointer();
                 if (1 == fnAddDictionaryEntry(sMinTerm, sbLineToWrite))
                 {
                     fnSetIDF(sMinTerm);
+                    fnAddDocsGrades(sMinTerm, sbLineToWrite);
                     if (this.cache.containsKey(sMinTerm))
                     {
                         fnAddCacheEntry(sMinTerm, sbLineToWrite, raf);
@@ -196,6 +202,22 @@ public class MyIndexer
 
     }
 
+    private void fnAddDocsGrades(String sMinTerm, StringBuilder sbLineToWrite)
+    {
+        String   sLine   = String.valueOf(sbLineToWrite);
+        String[] strings = sLine.split("!#");
+        for (int iIndex = 1, iSize = strings.length; iIndex < iSize; iIndex++)
+        {
+            MutablePair<String, Integer> pair = new MutablePair<>(strings[iIndex], Integer.valueOf((strings[iIndex + 1])));
+            iIndex++;
+            float  fIdf   = this.dictionary.get(sMinTerm).getMiddle();
+            double dGrade = fIdf * pair.getRight();
+            dGrade = Math.pow(dGrade, 2);
+            double dCurr = this.hashMapDocsGrade.get(pair.getLeft());
+            this.hashMapDocsGrade.put(pair.getLeft(), dCurr + dGrade);
+        }
+    }
+
     /**
      * Add new entry to the cache. Will Save 0.3 percent of the term line, and the rest will write to the posting file
      * and save the pointer.
@@ -206,7 +228,8 @@ public class MyIndexer
      * @throws IOException in the write.
      */
     private void fnAddCacheEntry(String sMinTerm, StringBuilder sbLineToWrite, RandomAccessFile raf) throws IOException
-    {StringBuilder                                  sbResult = new StringBuilder();
+    {
+        StringBuilder                               sbResult = new StringBuilder();
         String                                      sLine    = String.valueOf(sbLineToWrite);
         String[]                                    strings  = sLine.split("!#");
         PriorityQueue<MutablePair<String, Integer>> pairs    = new PriorityQueue<>(Comparator.comparingInt(MutablePair::getRight));
@@ -229,7 +252,7 @@ public class MyIndexer
         int iSize = pairs.size();
         for (int i = 0; i < iSize; i++)
         {
-            MutablePair<String,Integer> pair = pairs.poll();
+            MutablePair<String, Integer> pair = pairs.poll();
             sbResult.append(pair.toString());
         }
         raf.writeBytes(String.valueOf(sbResult));
@@ -238,7 +261,8 @@ public class MyIndexer
 
     /**
      * Add new Entry to the dictionary. will save the total tf, df, idf and pointer to the posting file
-     * @param sMinTerm the term to save
+     *
+     * @param sMinTerm      the term to save
      * @param sbLineToWrite the line to write to the posting file
      * @return -1 if df is 1, else return 1
      */
@@ -319,23 +343,28 @@ public class MyIndexer
      */
     private void fnWriteTemp()
     {
-        String sPathForCache, sPathForDic;
+        String sPathForCache, sPathForDic, sPathForGrades;
         if (bToStem)
         {
             sPathForCache = "Resources\\Stemmed Cache.txt";
             sPathForDic = "Resources\\Stemmed Dictionary.txt";
+            sPathForGrades = "Resources\\Stemmed Grades";
         }
         else
         {
             sPathForCache = "Resources\\Non Stemmed Cache.txt";
             sPathForDic = "Resources\\Non Stemmed Dictionary.txt";
+            sPathForGrades = "Resources\\Non Stemmed Docs Grades";
         }
-        BufferedWriter outputStreamForCache = null, outputStreamForDictionary = null;
+
+        BufferedWriter     outputStreamForCache = null, outputStreamForDictionary = null;
+        ObjectOutputStream outputStream         = null;
         {
             try
             {
                 File fileCache      = new File(sPathForCache);
                 File fileDictionary = new File(sPathForDic);
+                File source         = new File(sPathForGrades);
                 if (!fileCache.exists())
                 {
                     fileCache.createNewFile();
@@ -344,10 +373,17 @@ public class MyIndexer
                 {
                     fileDictionary.createNewFile();
                 }
+                if (!source.exists())
+                {
+                    source.createNewFile();
+                }
                 outputStreamForCache = new BufferedWriter(new FileWriter(fileCache));
                 outputStreamForDictionary = new BufferedWriter(new FileWriter(fileDictionary));
+                outputStream = new ObjectOutputStream(new FileOutputStream(source));
+
                 fnWriteCache(outputStreamForCache);
                 fnWriteDictionary(outputStreamForDictionary);
+                outputStream.writeObject(this.hashMapDocsGrade);
             }
             catch (IOException e)
             {
@@ -373,6 +409,17 @@ public class MyIndexer
                         {
                             outputStreamForDictionary.close();
                         }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+                if (outputStream != null)
+                {
+                    try
+                    {
+                        outputStream.close();
                     }
                     catch (IOException e)
                     {
@@ -717,13 +764,13 @@ public class MyIndexer
     public void fnWriteDicAndCache(String sPathForObjects)
     {
         this.sPathForObject = sPathForObjects;
-        String sPathForDic, sPathForCache;
+        String   sPathForDic, sPathForCache;
         String[] sPaths = fnGetPathForDicAndCache();
         sPathForDic = sPaths[0];
         sPathForCache = sPaths[1];
 
-        File fileForDictionary = new File (sPathForDic);
-        File fileForCache = new File (sPathForCache);
+        File fileForDictionary = new File(sPathForDic);
+        File fileForCache      = new File(sPathForCache);
         if (!fileForDictionary.exists())
         {
             try
@@ -771,58 +818,58 @@ public class MyIndexer
     public void fnReadDictionary(String sPathToRead)
     {
         String sPathForDictionary;
-       if(bToStem)
-       {
-           sPathForDictionary = sPathToRead + "\\dicStemmed";
-       }
-       else
-       {
-           sPathForDictionary = sPathToRead + "\\dicNonStemmed";
-       }
+        if (bToStem)
+        {
+            sPathForDictionary = sPathToRead + "\\dicStemmed";
+        }
+        else
+        {
+            sPathForDictionary = sPathToRead + "\\dicNonStemmed";
+        }
 
-       BufferedReader br = null;
-       File file = new File(sPathForDictionary);
-       try
-       {
-           if (!file.exists())
-           {
-               System.out.println("We can't read the dictionary if you don't have file in this path");
-           }
-           else
-           {
-               br = new BufferedReader(new FileReader(file));
-               String sLine;
-               while ((sLine = br.readLine()) != null)
-               {
-                   int iEndIndex = sLine.indexOf(':');
-                   String sTerm = sLine.substring(0, iEndIndex);
-                   String sData = sLine.substring(iEndIndex + 1);
-                   String[] arrData = sData.split(",");
-                   Integer[] integers = {Integer.valueOf(arrData[0]), Integer.valueOf(arrData[1])};
-                   Float f = Float.valueOf(arrData[2]);
-                   Long l = Long.valueOf(arrData[3]);
-                   this.dictionary.put(sTerm, new MutableTriple<>(integers, f, l));
-               }
-           }
-       }
-       catch (IOException e)
-       {
-           e.printStackTrace();
-       }
-       finally
-       {
-           if (br != null)
-           {
-               try
-               {
-                   br.close();
-               }
-               catch (IOException e)
-               {
-                   e.printStackTrace();
-               }
-           }
-       }
+        BufferedReader br   = null;
+        File           file = new File(sPathForDictionary);
+        try
+        {
+            if (!file.exists())
+            {
+                System.out.println("We can't read the dictionary if you don't have file in this path");
+            }
+            else
+            {
+                br = new BufferedReader(new FileReader(file));
+                String sLine;
+                while ((sLine = br.readLine()) != null)
+                {
+                    int       iEndIndex = sLine.indexOf(':');
+                    String    sTerm     = sLine.substring(0, iEndIndex);
+                    String    sData     = sLine.substring(iEndIndex + 1);
+                    String[]  arrData   = sData.split(",");
+                    Integer[] integers  = {Integer.valueOf(arrData[0]), Integer.valueOf(arrData[1])};
+                    Float     f         = Float.valueOf(arrData[2]);
+                    Long      l         = Long.valueOf(arrData[3]);
+                    this.dictionary.put(sTerm, new MutableTriple<>(integers, f, l));
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (br != null)
+            {
+                try
+                {
+                    br.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
@@ -840,8 +887,8 @@ public class MyIndexer
             sPathForCache = sPathToRead + "\\cacheNonStemmed";
         }
 
-        BufferedReader br = null;
-        File file = new File (sPathForCache);
+        BufferedReader br   = null;
+        File           file = new File(sPathForCache);
         try
         {
             if (!file.exists())
@@ -854,10 +901,10 @@ public class MyIndexer
                 String sLine;
                 while ((sLine = br.readLine()) != null)
                 {
-                    int iEndIndex = sLine.indexOf(":");
-                    String sTerm = sLine.substring(0, iEndIndex);
-                    String sData = sLine.substring(iEndIndex + 1);
-                    String[] arrData = sData.split("&&");
+                    int      iEndIndex = sLine.indexOf(":");
+                    String   sTerm     = sLine.substring(0, iEndIndex);
+                    String   sData     = sLine.substring(iEndIndex + 1);
+                    String[] arrData   = sData.split("&&");
                     this.cache.put(sTerm, new MutablePair<>(arrData[0], Long.valueOf(arrData[1])));
                 }
             }
@@ -888,7 +935,7 @@ public class MyIndexer
      */
     public void fnResetIndex()
     {
-       fnDeletePosting();
+        fnDeletePosting();
     }
 
     /**
@@ -914,6 +961,7 @@ public class MyIndexer
 
     /**
      * Get the dictionary now save in the memory
+     *
      * @return dictionary
      */
     public HashMap<String, MutableTriple<Integer[], Float, Long>> getDictionary()
@@ -992,6 +1040,7 @@ public class MyIndexer
 
     /**
      * Set new value to bToStem
+     *
      * @param bToStem true to use stemmer, else false
      */
     public void setbToStem(boolean bToStem)
@@ -1001,6 +1050,7 @@ public class MyIndexer
 
     /**
      * Writes the dictionary as a text file.
+     *
      * @param bf Buffered Writer we use to write with. should be initialize to the file we want to write to.
      *           The caller need to close this.
      * @throws IOException BufferedWriter Exceptions.
@@ -1018,6 +1068,7 @@ public class MyIndexer
 
     /**
      * Write the cache as text file
+     *
      * @param bf use this to write the cache, should be initialize with the file we want to write to.
      *           Caller need to close this.
      * @throws IOException buffered writer exceptions
@@ -1036,6 +1087,7 @@ public class MyIndexer
 
     /**
      * Set the path for saving the cache and dictionary
+     *
      * @param pathForObjects directory. should be existed.
      */
     public void setPathForObjects(String pathForObjects)
@@ -1045,6 +1097,7 @@ public class MyIndexer
 
     /**
      * Build a string for path to save the dictionary and cache.
+     *
      * @return full path to the file of the dictionary (first cell in the array), full path for the cache file
      * (second cell in the array)
      */
@@ -1065,6 +1118,59 @@ public class MyIndexer
         return new String[]{sPathForDic, sPathForCache};
     }
 
+    public float fnGetIDFGrade(String sTerm)
+    {
+        return this.dictionary.get(sTerm).getMiddle();
+    }
+
+    public void fnReadDocsGrades(String sPathForObjects)
+    {
+        String sPathForGrades;
+        if (bToStem)
+        {
+            sPathForGrades = "Resources\\Stemmed Grades";
+        }
+        else
+        {
+            sPathForGrades = "Resources\\Non Stemmed Docs Grades";
+        }
+        File              source      = new File(sPathForGrades);
+        ObjectInputStream inputStream = null;
+        if (source.exists())
+        {
+            try
+            {
+                inputStream = new ObjectInputStream(new FileInputStream(source));
+                this.hashMapDocsGrade = (HashMap<String, Double>) inputStream.readObject();
+            }
+            catch (FileNotFoundException | ClassNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            finally
+            {
+                if (null != inputStream)
+                {
+                    try
+                    {
+                        inputStream.close();
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 
 
+    public HashMap<String, Double> getHashMapDocsGrade()
+    {
+        return hashMapDocsGrade;
+    }
 }

@@ -5,6 +5,7 @@ import Documnet.Document;
 import Indexer.MyIndexer;
 import Parse.Parse;
 import Parse.Term;
+import Ranker.Ranker;
 import ReadFile.ReadFile;
 import Stemmer.PorterStemmer;
 import Tuple.MutablePair;
@@ -14,7 +15,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Observable;
+import java.util.TreeSet;
 
 
 /**
@@ -24,7 +28,9 @@ import java.util.*;
 public class MyModel extends Observable
 {
 
-    public String buildBDInfo;
+    public String                 buildBDInfo;
+    public HashMap<String, int[]> mDocInfo;
+
     private ReadFile  readFile;
     private Parse     parse;
     private MyIndexer indexer;
@@ -33,14 +39,15 @@ public class MyModel extends Observable
     private PorterStemmer     stemmer;
     private boolean           bToStem;
     private int               iNumOfDocs, iNumOfParts;
-    public HashMap<String,int[]> mDocInfo;
+    private Ranker ranker;
 
     /**
      * Constructor. will create a new folder name Posting in the path to keep all the files
-     * @param sRootPath path for the db
-     * @param bToStem do we use stemmer or not
+     *
+     * @param sRootPath       path for the db
+     * @param bToStem         do we use stemmer or not
      * @param sPathForPosting path to where we save the posting files
-     * @param iNumOfParts how many parts we divide the db for reading.
+     * @param iNumOfParts     how many parts we divide the db for reading.
      */
     public MyModel(String sRootPath, boolean bToStem, String sPathForPosting, int iNumOfParts)
     {
@@ -53,9 +60,11 @@ public class MyModel extends Observable
         this.indexer = new MyIndexer(sPathForIndexer, bToStem);
         this.arrayStringFilesPath = new ArrayList<>();
         this.stemmer = new PorterStemmer();
-        this.mDocInfo= new HashMap<>();
+        this.mDocInfo = new HashMap<>();
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
+        this.ranker = new Ranker(this.indexer.getHashMapDocsGrade());
+
     }
 
     /**
@@ -68,7 +77,7 @@ public class MyModel extends Observable
         long startTime = System.currentTimeMillis();
         fnCreateFolder();
         fnFindFilesInDB();
-        parse.setHashSetStopWords(readFile.fnReadStopWords(this.sStopWordsPath));
+        this.parse.setHashSetStopWords(readFile.fnReadStopWords(this.sStopWordsPath));
         int                 iNumOfFiles        = this.arrayStringFilesPath.size(); // Num of files in the db
         int                 iPercent           = iNumOfFiles / this.iNumOfParts;
         ArrayList<Document> listDocumentInFile = new ArrayList<>();
@@ -99,9 +108,10 @@ public class MyModel extends Observable
                 StringBuilder sbDocName     = new StringBuilder(listDocumentInFile.get(iIndex2).getName());
                 sbDocName.deleteCharAt(0);
                 sbDocName.deleteCharAt(sbDocName.length() - 1);
-                MutablePair<ArrayList<Term>,int[]> m=parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
+                MutablePair<ArrayList<Term>, int[]> m = parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
+
                 listOfTerms.addAll(m.getLeft());
-                mDocInfo.put(String.valueOf(sbDocName),m.getRight());
+                mDocInfo.put(String.valueOf(sbDocName), m.getRight());
             }
             if (this.bToStem)
             {
@@ -140,6 +150,7 @@ public class MyModel extends Observable
         setChanged();
         notifyObservers("index end");
     }
+
 
     /**
      * Creates the end message to represent in the gui
@@ -311,6 +322,7 @@ public class MyModel extends Observable
 
     /**
      * Save the Dictionary and Cache in a specific path
+     *
      * @param sPathForObjects where to save the files
      */
     public void fnSaveDicAndCache(String sPathForObjects)
@@ -321,6 +333,7 @@ public class MyModel extends Observable
     /**
      * Load the dictionary and cache from a path.
      * The files needed to be in specific form and in specific name.
+     *
      * @param sPathForObjects from where to load the files
      */
     public void fnLoadObjects(String sPathForObjects)
@@ -342,14 +355,16 @@ public class MyModel extends Observable
         }
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
+        this.indexer.fnReadDocsGrades(sPathForObjects);
     }
+
 
     /**
      * Save the cache in text file under the Resources folder for show on screen.
      */
     public void fnShowCache()
     {
-        File file = new File ("Resources\\Cache.txt");
+        File file = new File("Resources\\Cache.txt");
         if (!file.exists())
         {
             try
@@ -396,7 +411,7 @@ public class MyModel extends Observable
         HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary = this.indexer.getDictionary();
         TreeSet<String>                                        treeSet    = new TreeSet<>(dictionary.keySet());
 
-        File file = new File ("Resources\\Dictionary.txt");
+        File file = new File("Resources\\Dictionary.txt");
         if (!file.exists())
         {
             try
@@ -438,6 +453,11 @@ public class MyModel extends Observable
                 }
             }
         }
+    }
+
+    public void fnSetPostingFileReader(String sReadPosting)
+    {
+        this.ranker.fnRandomAccessFileInitialize(sReadPosting);
     }
 
 

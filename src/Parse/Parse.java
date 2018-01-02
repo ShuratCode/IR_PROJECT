@@ -397,5 +397,10 @@ public class Parse
     return sResult;
   }
 
+  public boolean fnIsStopWords(String sWord)
+  {
+      return this.hashSetStopWords.contains(sWord);
+  }
+
 
 }
