@@ -39,11 +39,11 @@ public class Parse
       sWord = arrStringWords[iIndex];
       orgLen=sWord.length();
       sWord = fnCleanS(sWord);
-      if(orgLen!= sWord.length()){isDirty=true;} else{ isDirty=false; }
+        isDirty = orgLen != sWord.length();
       if(sWord.length()<=1) {continue;}
       if('a'<=sWord.charAt(0)&&'z'>=sWord.charAt(0)){
           sWord=fnRemoveAllCharOfKind(sWord,'.'); sWord=fnRemoveAllCharOfKind(sWord,',');
-          if(orgLen!= sWord.length()){isDirty=true;} else{ isDirty=false; }
+          isDirty = orgLen != sWord.length();
           if(sWord.length()<=1||isDirty){continue;}
           if(hashSetStopWords.contains(sWord)){continue;}
           if(termMap.containsKey(sWord)){
@@ -83,7 +83,7 @@ public class Parse
 
             sWord = fnRemoveAllCharOfKind(sWord, '.');
             sWord = fnRemoveAllCharOfKind(sWord, ',');
-            if(orgLen!= sWord.length()){isDirty=true;} else{ isDirty=false; }
+            isDirty = orgLen != sWord.length();
             if(sWord.length()<=1||isDirty){continue;}
             sWord = sWord.toLowerCase();
             if(Objects.equals(sWord, "mr")||Objects.equals(sWord, "ms")||Objects.equals(sWord, "mrs")||Objects.equals(sWord, "miss")){
@@ -402,5 +402,10 @@ public class Parse
       return this.hashSetStopWords.contains(sWord);
   }
 
+    public String[] fnGetSentences(String sbText)
+    {
+        String[] sLines = String.valueOf(sbText).split(".");
 
+        return null;
+    }
 }

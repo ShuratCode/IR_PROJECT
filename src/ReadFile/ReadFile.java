@@ -22,7 +22,7 @@ public class ReadFile
      */
     public ArrayList<Document> fnReadFile(File fileToRead)
     {
-
+        String                   sFileName     = fileToRead.getName();
         ArrayList<Document>      listFiles     = new ArrayList<>();
         ArrayList<String>        ArrayListFile = fnGetData(fileToRead);
         ArrayList<StringBuilder> arrayListDocs = fnSeparateToDocs(ArrayListFile);
@@ -30,6 +30,7 @@ public class ReadFile
         {
             StringBuilder sbDoc    = arrayListDocs.get(iIndex);
             Document      document = new Document(sbDoc);
+            document.setsFileName(sFileName);
             listFiles.add(document);
         }
 

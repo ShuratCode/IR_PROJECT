@@ -1,12 +1,15 @@
 package Documnet;
 
+import java.io.Serializable;
+
 /**
  * @author Shaked
  * @since 26-Nov-17
  */
-public class Document
+public class Document implements Serializable
 {
-    private String        sName;
+    private float  fGrade;
+    private String sName, sFileName;
     private StringBuilder sbText;
 
     /**
@@ -67,10 +70,36 @@ public class Document
 
     /**
      * Set the text of the document
+     *
      * @param sbText the text to save
      */
     public void setText(StringBuilder sbText)
     {
         this.sbText = sbText;
+    }
+
+    public void setsName(String sName)
+    {
+        this.sName = sName;
+    }
+
+    public float getfGrade()
+    {
+        return fGrade;
+    }
+
+    public void setfGrade(float fGrade)
+    {
+        this.fGrade = fGrade;
+    }
+
+    public String getsFileName()
+    {
+        return sFileName;
+    }
+
+    public void setsFileName(String sFileName)
+    {
+        this.sFileName = sFileName;
     }
 }

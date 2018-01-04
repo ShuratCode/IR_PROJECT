@@ -86,6 +86,7 @@ public class MyModel extends Observable
         {
             File fileToRead = new File(this.arrayStringFilesPath.get(iIndex));
             listDocumentInFile.addAll(readFile.fnReadFile(fileToRead)); // All the documents in a file
+
             if (iItr < iPercent && iTimeToRead < 8)
             {
                 continue;
@@ -95,7 +96,7 @@ public class MyModel extends Observable
             {
                 continue;
             }
-
+            this.indexer.fnAddDocs(listDocumentInFile);
             ArrayList<Term> listOfTerms = new ArrayList<>(); // All the terms in the file
 
             // Looping over all the documents in each file

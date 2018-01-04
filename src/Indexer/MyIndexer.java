@@ -1,5 +1,6 @@
 package Indexer;
 
+import Documnet.Document;
 import Parse.Term;
 import Tuple.MutablePair;
 import Tuple.MutableTriple;
@@ -20,8 +21,8 @@ public class MyIndexer
     private int                                                    iTotalDocs;
     private HashMap<String, MutablePair<String, Long>>             cache;
     private String                                                 sPath, sPathForObject;
-    private boolean                 bToStem;
-    private HashMap<String, Double> hashMapDocsGrade;
+    private boolean                                      bToStem;
+    private HashMap<String, MutablePair<Double, String>> hashmapDocs;
 
 
 
@@ -40,7 +41,7 @@ public class MyIndexer
         this.sPath = sPath;
         this.sPathForObject = null;
         this.bToStem = bToStem;
-        this.hashMapDocsGrade = new HashMap<>();
+        this.hashmapDocs = new HashMap<>();
     }
 
     /**
@@ -193,7 +194,7 @@ public class MyIndexer
 
             fnDeleteTempFiles(files);
             raf.close();
-
+            fnSqrtDocsGrade();
             fnWriteTemp();
 
 
@@ -202,10 +203,20 @@ public class MyIndexer
 
     }
 
+    private void fnSqrtDocsGrade()
+    {
+        for (MutablePair<Double, String> pair : hashmapDocs.values())
+        {
+            Double d = pair.getLeft();
+            pair.setLeft(Math.sqrt(d));
+        }
+    }
+
     private void fnAddDocsGrades(String sMinTerm, StringBuilder sbLineToWrite)
     {
         String   sLine   = String.valueOf(sbLineToWrite);
         String[] strings = sLine.split("!#");
+
         for (int iIndex = 1, iSize = strings.length; iIndex < iSize; iIndex++)
         {
             MutablePair<String, Integer> pair = new MutablePair<>(strings[iIndex], Integer.valueOf((strings[iIndex + 1])));
@@ -213,9 +224,11 @@ public class MyIndexer
             float  fIdf   = this.dictionary.get(sMinTerm).getMiddle();
             double dGrade = fIdf * pair.getRight();
             dGrade = Math.pow(dGrade, 2);
-            double dCurr = this.hashMapDocsGrade.get(pair.getLeft());
-            this.hashMapDocsGrade.put(pair.getLeft(), dCurr + dGrade);
+
+            double dCurr = this.hashmapDocs.get(sMinTerm).getLeft();
+            this.hashmapDocs.get(sMinTerm).setLeft(dCurr + dGrade);
         }
+
     }
 
     /**
@@ -383,7 +396,7 @@ public class MyIndexer
 
                 fnWriteCache(outputStreamForCache);
                 fnWriteDictionary(outputStreamForDictionary);
-                outputStream.writeObject(this.hashMapDocsGrade);
+                outputStream.writeObject(this.hashmapDocs);
             }
             catch (IOException e)
             {
@@ -1141,7 +1154,7 @@ public class MyIndexer
             try
             {
                 inputStream = new ObjectInputStream(new FileInputStream(source));
-                this.hashMapDocsGrade = (HashMap<String, Double>) inputStream.readObject();
+                this.hashmapDocs = (HashMap<String, MutablePair<Double, String>>) inputStream.readObject();
             }
             catch (FileNotFoundException | ClassNotFoundException e)
             {
@@ -1169,8 +1182,17 @@ public class MyIndexer
     }
 
 
-    public HashMap<String, Double> getHashMapDocsGrade()
+    public HashMap<String, MutablePair<Double, String>> getHashMapDocsGrade()
     {
-        return hashMapDocsGrade;
+        return hashmapDocs;
+    }
+
+    public void fnAddDocs(ArrayList<Document> listDocumentInFile)
+    {
+        for (int i = 0, listDocumentInFileSize = listDocumentInFile.size(); i < listDocumentInFileSize; i++)
+        {
+            Document doc = listDocumentInFile.get(i);
+            this.hashmapDocs.put(doc.getName(), new MutablePair<>((double) 0, doc.getsFileName()));
+        }
     }
 }

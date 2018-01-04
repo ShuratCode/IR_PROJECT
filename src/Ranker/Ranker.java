@@ -1,6 +1,5 @@
 package Ranker;
 
-import Indexer.MyIndexer;
 import Tuple.MutablePair;
 
 import java.io.File;
@@ -10,11 +9,11 @@ import java.util.HashMap;
 
 public class Ranker
 {
-    private HashMap<String, Double> hashMapDocsGrades;
-    private RandomAccessFile        randomAccessFile;
+    private HashMap<String, MutablePair<Double, String>> hashMapDocsGrades;
+    private RandomAccessFile                             randomAccessFile;
 
 
-    public Ranker(HashMap<String, Double> hashMapDocsGrades)
+    public Ranker(HashMap<String, MutablePair<Double, String>> hashMapDocsGrades)
     {
         this.hashMapDocsGrades = hashMapDocsGrades;
     }
