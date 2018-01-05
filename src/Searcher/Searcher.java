@@ -2,15 +2,14 @@ package Searcher;
 
 import Parse.Parse;
 import Parse.Term;
+import ReadFile.ReadFile;
 import Stemmer.PorterStemmer;
 import Tuple.MutablePair;
+import Tuple.MutableTriple;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,19 +18,31 @@ import java.util.Map;
 
 public class Searcher
 {
+    private String  sCorpusPath;
     private Parse   parse;
     private boolean bWikipedia, bToStem;
-    private PorterStemmer stemmer;
+    private PorterStemmer                                          stemmer;
+    private ReadFile                                               readFile;
+    private HashMap<String, MutablePair<Double, String>>           hashMapDocs;
+    private HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary;
+    private RandomAccessFile                                       randomAccessFile;
+    private HashMap<String, MutablePair<String, Long>>             cache;
 
 
-    public Searcher(Parse parse, boolean bToStem, PorterStemmer stemmer)
+    public Searcher(boolean bToStem, HashMap<String, MutablePair<Double, String>> hashMapDocs, String sCorpusPath,
+                    HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary, HashMap<String, MutablePair<String, Long>> cache)
     {
-        this.parse = parse;
+        this.parse = new Parse();
         this.bToStem = bToStem;
-        this.stemmer = stemmer;
-
+        this.stemmer = new PorterStemmer();
+        this.hashMapDocs = hashMapDocs;
+        this.sCorpusPath = sCorpusPath;
+        this.readFile = new ReadFile();
+        this.dictionary = dictionary;
+        this.cache = cache;
     }
 
+    //TODO: complete javadoc
 
     /**
      * Will get query and parse it to separate words.
@@ -44,31 +55,33 @@ public class Searcher
     {
         MutablePair<ArrayList<Term>, int[]> pair = parse.fnParseText1(sQuery, "");
         String[]                            result;
+        String[]                            sQueryWords;
         if (bWikipedia)
         {
             String[] arrayWordsFromWikipedia = fnGetWordsFromWikipedia(sQuery);
-            result = null;
+            //TODO: continue this
+            sQueryWords = null;
         }
         else
         {
-            result = new String[pair.getLeft().size()];
+            sQueryWords = new String[pair.getLeft().size()];
             ArrayList<Term> left = pair.getLeft();
             for (int i = 0, leftSize = left.size(); i < leftSize; i++)
             {
                 Term term = left.get(i);
                 if (bToStem)
                 {
-                    result[i] = this.stemmer.stemTerm(term.getsName());
+                    sQueryWords[i] = this.stemmer.stemTerm(term.getsName());
                 }
                 else
                 {
-                    result[i] = term.getsName();
+                    sQueryWords[i] = term.getsName();
                 }
 
             }
 
         }
-        return result;
+        return null;
     }
 
     public String[] fnGetWordsFromWikipedia(StringBuilder sQuery)
@@ -198,5 +211,145 @@ public class Searcher
         this.parse.setHashSetStopWords(stopWords);
     }
 
+    public ArrayList<MutablePair<String, Double>> fnMostImportant(String sDocName)
+    {
+        String sFileName = this.hashMapDocs.get(sDocName).getRight();
+        String sDocPath  = this.sCorpusPath + "\\" + sFileName + "\\" + sFileName;
+        File   file      = new File(sDocPath);
+        if (!file.exists())
+        {
+            System.out.println("Problem with file");
+        }
+        else
+        {
+            ArrayList<Documnet.Document> docs = this.readFile.fnReadFile(file);
+            Documnet.Document            doc  = fnGetCorrectDoc(docs, sDocName);
+            if (null != doc)
+            {
+                ArrayList<String>                      sLines = this.parse.fnGetSentences(doc.getText());
+                ArrayList<MutablePair<String, Double>> pairs  = fnGetLinesGrades(sLines, sDocName);
+                pairs.sort((o1, o2) -> (int) (o1.getRight() - o2.getRight()));
+                return pairs;
+            }
 
+        }
+        return null;
+    }
+
+    private ArrayList<MutablePair<String, Double>> fnGetLinesGrades(ArrayList<String> sLines, String sDocName)
+    {
+        ArrayList<MutablePair<String, Double>> result = new ArrayList<>();
+        for (int i = 0, sLinesSize = sLines.size(); i < sLinesSize; i++)
+        {
+            String   sLine  = sLines.get(i);
+            String[] sWords = sLine.split("[ ,\n\r\t\f]");
+            for (int iIndex = 0, sWordsLength = sWords.length; iIndex < sWordsLength; iIndex++)
+            {
+                String sWord  = sWords[iIndex];
+                double idf    = this.dictionary.get(sWord).getMiddle();
+                int    iTF    = fnGetTF(sWord, sDocName);
+                double dGrade = iTF * idf;
+                result.add(new MutablePair<>(sWord, dGrade));
+            }
+
+        }
+        return result;
+    }
+
+    private int fnGetTF(String sWord, String sDocName)
+    {
+        long     lPointer = this.dictionary.get(sWord).getRight();
+        String   sLine;
+        String[] strings;
+        int      iResult  = -1;
+        if (-1 == lPointer)
+        {
+            sLine = this.cache.get(sWord).getLeft();
+            strings = sLine.split("!#");
+            iResult = fnGetTFFRomLine(strings, sDocName);
+            if (iResult == -1)
+            {
+                try
+                {
+                    lPointer = this.cache.get(sWord).getRight();
+                    this.randomAccessFile.seek(lPointer);
+                    sLine = this.randomAccessFile.readLine();
+                    strings = sLine.split("!#");
+                    iResult = fnGetTFFRomLine(strings, sDocName);
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+            else
+            {
+                return iResult;
+            }
+
+        }
+        else
+        {
+            try
+            {
+                this.randomAccessFile.seek(lPointer);
+                sLine = this.randomAccessFile.readLine();
+                strings = sLine.split("!#");
+                iResult = fnGetTFFRomLine(strings, sDocName);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        return iResult;
+    }
+
+    private int fnGetTFFRomLine(String[] strings, String sDocName)
+    {
+        for (int iIndex = 0, iLength = strings.length; iIndex < iLength; iIndex++)
+        {
+            String sDocTemp = strings[iIndex];
+            iIndex++;
+            if (sDocName.equals(sDocTemp))
+            {
+                String sNum = strings[iIndex];
+                return Integer.parseInt(sNum);
+            }
+        }
+        return -1;
+    }
+
+    private Documnet.Document fnGetCorrectDoc(ArrayList<Documnet.Document> docs, String sDocName)
+    {
+
+
+        for (int i = 0, docsSize = docs.size(); i < docsSize; i++)
+        {
+            Documnet.Document document  = docs.get(i);
+            StringBuilder     sbDocName = new StringBuilder(document.getName());
+            sbDocName.deleteCharAt(0);
+            sbDocName.deleteCharAt(sbDocName.length() - 1);
+            if (String.valueOf(sbDocName).equals(sDocName))
+            {
+                return document;
+            }
+        }
+        return null;
+    }
+
+    public void fnInitializeReader(String sReadPosting)
+    {
+        File posting = new File(sReadPosting);
+        try
+        {
+            this.randomAccessFile = new RandomAccessFile(posting, "r");
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+    }
 }

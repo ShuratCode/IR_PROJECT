@@ -1,6 +1,5 @@
 package Indexer;
 
-import Documnet.Document;
 import Parse.Term;
 import Tuple.MutablePair;
 import Tuple.MutableTriple;
@@ -75,6 +74,7 @@ public class MyIndexer
             for (int i = 0, arrayListTermsSize = arrayListTerms.size(); i < arrayListTermsSize; i++)
             {
                 Term   term  = arrayListTerms.get(i);
+
                 String sTerm = term.getsName();
 
                 if (this.hashMapTempStrings.containsKey(term.getsName()))
@@ -221,12 +221,14 @@ public class MyIndexer
         {
             MutablePair<String, Integer> pair = new MutablePair<>(strings[iIndex], Integer.valueOf((strings[iIndex + 1])));
             iIndex++;
+            String sDoc = pair.getLeft();
+
             float  fIdf   = this.dictionary.get(sMinTerm).getMiddle();
             double dGrade = fIdf * pair.getRight();
             dGrade = Math.pow(dGrade, 2);
 
-            double dCurr = this.hashmapDocs.get(sMinTerm).getLeft();
-            this.hashmapDocs.get(sMinTerm).setLeft(dCurr + dGrade);
+            double dCurr = this.hashmapDocs.get(sDoc).getLeft();
+            this.hashmapDocs.get(sDoc).setLeft(dCurr + dGrade);
         }
 
     }
@@ -1181,18 +1183,14 @@ public class MyIndexer
         }
     }
 
-
     public HashMap<String, MutablePair<Double, String>> getHashMapDocsGrade()
     {
         return hashmapDocs;
     }
 
-    public void fnAddDocs(ArrayList<Document> listDocumentInFile)
+    public void fnAddDoc(String sDocName, String sDocFile)
     {
-        for (int i = 0, listDocumentInFileSize = listDocumentInFile.size(); i < listDocumentInFileSize; i++)
-        {
-            Document doc = listDocumentInFile.get(i);
-            this.hashmapDocs.put(doc.getName(), new MutablePair<>((double) 0, doc.getsFileName()));
-        }
+        double d = 0;
+        this.hashmapDocs.put(sDocName, new MutablePair<>(d, sDocFile));
     }
 }

@@ -7,6 +7,7 @@ import Parse.Parse;
 import Parse.Term;
 import Ranker.Ranker;
 import ReadFile.ReadFile;
+import Searcher.Searcher;
 import Stemmer.PorterStemmer;
 import Tuple.MutablePair;
 import Tuple.MutableTriple;
@@ -39,7 +40,8 @@ public class MyModel extends Observable
     private PorterStemmer     stemmer;
     private boolean           bToStem;
     private int               iNumOfDocs, iNumOfParts;
-    private Ranker ranker;
+    private Ranker   ranker;
+    private Searcher searcher;
 
     /**
      * Constructor. will create a new folder name Posting in the path to keep all the files
@@ -65,6 +67,13 @@ public class MyModel extends Observable
         this.iNumOfParts = iNumOfParts;
         this.ranker = new Ranker(this.indexer.getHashMapDocsGrade());
 
+    }
+
+    public MyModel(String sRootPath, boolean bToStem, String sPathForObjects)
+    {
+        this.sRootPath = sRootPath;
+        this.bToStem = bToStem;
+        //TODO: read dictionary and cache and documents objects.
     }
 
     /**
@@ -96,7 +105,7 @@ public class MyModel extends Observable
             {
                 continue;
             }
-            this.indexer.fnAddDocs(listDocumentInFile);
+
             ArrayList<Term> listOfTerms = new ArrayList<>(); // All the terms in the file
 
             // Looping over all the documents in each file
@@ -107,11 +116,15 @@ public class MyModel extends Observable
             {
                 StringBuilder sbTextToParse = listDocumentInFile.get(iIndex2).getText();
                 StringBuilder sbDocName     = new StringBuilder(listDocumentInFile.get(iIndex2).getName());
+                String        sDocFile      = listDocumentInFile.get(iIndex2).getsFileName();
+
                 sbDocName.deleteCharAt(0);
                 sbDocName.deleteCharAt(sbDocName.length() - 1);
+                this.indexer.fnAddDoc(String.valueOf(sbDocName), sDocFile);
                 MutablePair<ArrayList<Term>, int[]> m = parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
 
                 listOfTerms.addAll(m.getLeft());
+
                 mDocInfo.put(String.valueOf(sbDocName), m.getRight());
             }
             if (this.bToStem)
@@ -151,7 +164,6 @@ public class MyModel extends Observable
         setChanged();
         notifyObservers("index end");
     }
-
 
     /**
      * Creates the end message to represent in the gui
@@ -357,6 +369,7 @@ public class MyModel extends Observable
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
         this.indexer.fnReadDocsGrades(sPathForObjects);
+
     }
 
 
@@ -459,6 +472,13 @@ public class MyModel extends Observable
     public void fnSetPostingFileReader(String sReadPosting)
     {
         this.ranker.fnRandomAccessFileInitialize(sReadPosting);
+        this.searcher.fnInitializeReader(sReadPosting);
+    }
+
+    //TODO: complete this.
+    public String[] fnMostImportant(String sDocName)
+    {
+        return null;
     }
 
 

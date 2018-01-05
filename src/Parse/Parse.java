@@ -402,10 +402,21 @@ public class Parse
       return this.hashSetStopWords.contains(sWord);
   }
 
-    public String[] fnGetSentences(String sbText)
+    public ArrayList<String> fnGetSentences(StringBuilder sbText)
     {
-        String[] sLines = String.valueOf(sbText).split(".");
+        String[]          sLines = String.valueOf(sbText).split(".");
+        ArrayList<String> result = new ArrayList<>();
+        for (int i = 0, sLinesLength = sLines.length; i < sLinesLength; i++)
+        {
+            String sLine = sLines[i];
+            if (sLine.equals("") || !sLine.contains(" "))
+            {
+                continue;
+            }
+            result.add(sLine);
 
-        return null;
+        }
+
+        return result;
     }
 }
