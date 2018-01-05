@@ -20,8 +20,8 @@ public class MyIndexer
     private int                                                    iTotalDocs;
     private HashMap<String, MutablePair<String, Long>>             cache;
     private String                                                 sPath, sPathForObject;
-    private boolean                                      bToStem;
-    private HashMap<String, MutablePair<Double, String>> hashmapDocs;
+    private boolean                                        bToStem;
+    private HashMap<String, MutablePair<double[], String>> hashmapDocs;
 
 
 
@@ -125,9 +125,11 @@ public class MyIndexer
      * @throws IOException throws exception from creating a new file or create new RandomAccessFile
      * @see File
      * @see RandomAccessFile
+     * @param mDocInfo
      */
-    public void fnMergePostings() throws IOException
+    public void fnMergePostings(HashMap<String, MutablePair<double[], String>> mDocInfo) throws IOException
     {
+        this.hashmapDocs = mDocInfo;
         fnCreateCache();
         File[]           files = fnGetAllTempFiles(); // Get all the file in the Posting dir
         RandomAccessFile raf   = new RandomAccessFile(fnCreateConstPosting(), "rw");
@@ -205,10 +207,10 @@ public class MyIndexer
 
     private void fnSqrtDocsGrade()
     {
-        for (MutablePair<Double, String> pair : hashmapDocs.values())
+        for (MutablePair<double[], String> pair : hashmapDocs.values())
         {
-            Double d = pair.getLeft();
-            pair.setLeft(Math.sqrt(d));
+            Double d = pair.getLeft()[2];
+            pair.getLeft()[2] = Math.sqrt(d);
         }
     }
 
@@ -227,8 +229,8 @@ public class MyIndexer
             double dGrade = fIdf * pair.getRight();
             dGrade = Math.pow(dGrade, 2);
 
-            double dCurr = this.hashmapDocs.get(sDoc).getLeft();
-            this.hashmapDocs.get(sDoc).setLeft(dCurr + dGrade);
+            double dCurr = this.hashmapDocs.get(sDoc).getLeft()[2];
+            this.hashmapDocs.get(sDoc).getLeft()[2] = (dCurr + dGrade);
         }
 
     }
@@ -617,7 +619,7 @@ public class MyIndexer
     private BufferedWriter fnCreateTempPostingFile() throws IOException
     {
         this.iNumOfPostingFiles++;
-        String sPostingFilePath = sPath + "/" + this.iNumOfPostingFiles + ".txt";
+        String sPostingFilePath = sPath + "\\" + this.iNumOfPostingFiles + ".txt";
         File   postingFile      = new File(sPostingFilePath);
         if (!postingFile.exists())
         {
@@ -1156,7 +1158,7 @@ public class MyIndexer
             try
             {
                 inputStream = new ObjectInputStream(new FileInputStream(source));
-                this.hashmapDocs = (HashMap<String, MutablePair<Double, String>>) inputStream.readObject();
+                this.hashmapDocs = (HashMap<String, MutablePair<double[], String>>) inputStream.readObject();
             }
             catch (FileNotFoundException | ClassNotFoundException e)
             {
@@ -1183,14 +1185,14 @@ public class MyIndexer
         }
     }
 
-    public HashMap<String, MutablePair<Double, String>> getHashMapDocsGrade()
+    public HashMap<String, MutablePair<double[], String>> getHashMapDocsGrade()
     {
         return hashmapDocs;
     }
 
-    public void fnAddDoc(String sDocName, String sDocFile)
+    public void fnAddDoc(String sDocName, int[] ints, String sDocFile)
     {
-        double d = 0;
+        double[] d = {ints[0], ints[1], 0};
         this.hashmapDocs.put(sDocName, new MutablePair<>(d, sDocFile));
     }
 }

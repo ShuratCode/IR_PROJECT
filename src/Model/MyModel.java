@@ -29,8 +29,8 @@ import java.util.TreeSet;
 public class MyModel extends Observable
 {
 
-    public String                 buildBDInfo;
-    public HashMap<String, int[]> mDocInfo;
+    public String                                         buildBDInfo;
+    public HashMap<String, MutablePair<double[], String>> mDocInfo;
 
     private ReadFile  readFile;
     private Parse     parse;
@@ -65,7 +65,7 @@ public class MyModel extends Observable
         this.mDocInfo = new HashMap<>();
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
-        this.ranker = new Ranker(this.indexer.getHashMapDocsGrade());
+        // this.ranker = new Ranker(this.indexer.getHashMapDocsGrade());
 
     }
 
@@ -120,12 +120,12 @@ public class MyModel extends Observable
 
                 sbDocName.deleteCharAt(0);
                 sbDocName.deleteCharAt(sbDocName.length() - 1);
-                this.indexer.fnAddDoc(String.valueOf(sbDocName), sDocFile);
+
                 MutablePair<ArrayList<Term>, int[]> m = parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
-
+                //this.indexer.fnAddDoc(String.valueOf(sbDocName), m.getRight(), sDocFile);
                 listOfTerms.addAll(m.getLeft());
-
-                mDocInfo.put(String.valueOf(sbDocName), m.getRight());
+                double[] d = {m.getRight()[0], m.getRight()[1], 0};
+                mDocInfo.put(String.valueOf(sbDocName), new MutablePair<>(d, sDocFile));
             }
             if (this.bToStem)
             {
@@ -151,7 +151,7 @@ public class MyModel extends Observable
         indexer.setTotalDocs(iNumOfDocs);
         try
         {
-            indexer.fnMergePostings();
+            indexer.fnMergePostings(this.mDocInfo);
             long   endTime   = System.currentTimeMillis();
             double totalTime = (endTime - startTime) / Math.pow(10, 3);
             buildBDInfo = "" + fnCreateEndMessage(totalTime);
