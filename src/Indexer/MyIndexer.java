@@ -1195,4 +1195,8 @@ public class MyIndexer
         double[] d = {ints[0], ints[1], 0};
         this.hashmapDocs.put(sDocName, new MutablePair<>(d, sDocFile));
     }
+/******************************************need to delet*********************************/
+    public HashMap<String,MutablePair<String,Long>> getCache() {
+        return cache;
+    }
 }

@@ -330,7 +330,7 @@ public class Parse
    * @return the parse string
    */
   private String fnParseNumber (String sWord) // ******for now no 2/3 ****
-  //todo need to fix this
+
   {
     String sResult = sWord;
     int r,l;
