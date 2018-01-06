@@ -370,6 +370,7 @@ public class MyModel extends Observable
         this.indexer.fnReadDictionary(sPathForObjects);
         this.indexer.fnReadDocsGrades(sPathForObjects);
 
+
     }
 
 
@@ -478,6 +479,7 @@ public class MyModel extends Observable
     //TODO: complete this.
     public String[] fnMostImportant(String sDocName)
     {
+
         return null;
     }
 

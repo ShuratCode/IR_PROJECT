@@ -23,13 +23,13 @@ public class Searcher
     private boolean bWikipedia, bToStem;
     private PorterStemmer                                          stemmer;
     private ReadFile                                               readFile;
-    private HashMap<String, MutablePair<Double, String>>           hashMapDocs;
+    private HashMap<String, MutablePair<double[], String>>         hashMapDocs;
     private HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary;
     private RandomAccessFile                                       randomAccessFile;
     private HashMap<String, MutablePair<String, Long>>             cache;
 
 
-    public Searcher(boolean bToStem, HashMap<String, MutablePair<Double, String>> hashMapDocs, String sCorpusPath,
+    public Searcher(boolean bToStem, HashMap<String, MutablePair<double[], String>> hashMapDocs, String sCorpusPath,
                     HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary, HashMap<String, MutablePair<String, Long>> cache)
     {
         this.parse = new Parse();
