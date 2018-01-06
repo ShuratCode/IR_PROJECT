@@ -65,7 +65,8 @@ public class MyModel extends Observable
         this.mDocInfo = new HashMap<>();
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
-        // this.ranker = new Ranker(this.indexer.getHashMapDocsGrade());
+        this.ranker = null;
+        this.searcher=null;
 
     }
 
@@ -369,8 +370,7 @@ public class MyModel extends Observable
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
         this.indexer.fnReadDocsGrades(sPathForObjects);
-
-
+        this.mDocInfo=indexer.getHashMapDocsGrade();
     }
 
 
@@ -475,13 +475,20 @@ public class MyModel extends Observable
         this.ranker.fnRandomAccessFileInitialize(sReadPosting);
         this.searcher.fnInitializeReader(sReadPosting);
     }
-
+    //todo : add all the new funcs
     //TODO: complete this.
     public String[] fnMostImportant(String sDocName)
     {
-
         return null;
     }
 
+    public void fnNormalSearch(String Query){}
+/***********************************to be deleted*****************************/
+    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic() {
+        return indexer.getDictionary();
+    }
 
+    public HashMap<String, MutablePair<String, Long>> fnGetCache() {
+        return indexer.getCache();
+    }
 }
