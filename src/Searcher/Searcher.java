@@ -27,6 +27,7 @@ public class Searcher
     private HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary;
     private RandomAccessFile                                       randomAccessFile;
     private HashMap<String, MutablePair<String, Long>>             cache;
+    private HashSet<String>                                        stopWords;
 
 
     public Searcher(boolean bToStem, HashMap<String, MutablePair<double[], String>> hashMapDocs, String sCorpusPath,
@@ -208,6 +209,7 @@ public class Searcher
 
     public void fnSetStopWords(HashSet<String> stopWords)
     {
+        this.stopWords = stopWords;
         this.parse.setHashSetStopWords(stopWords);
     }
 
@@ -228,7 +230,7 @@ public class Searcher
             {
                 ArrayList<String>                      sLines = this.parse.fnGetSentences(doc.getText());
                 ArrayList<MutablePair<String, Double>> pairs  = fnGetLinesGrades(sLines, sDocName);
-                pairs.sort((o1, o2) -> (int) (o1.getRight() - o2.getRight()));
+                pairs.sort((o1, o2) -> (int) (o2.getRight() - o1.getRight()));
                 return pairs;
             }
 
@@ -242,13 +244,17 @@ public class Searcher
         for (int i = 0, sLinesSize = sLines.size(); i < sLinesSize; i++)
         {
             String   sLine  = sLines.get(i);
-            String[] sWords = sLine.split("[ ,\n\r\t\f]");
+            String[] sWords = sLine.split("[ ]");
+            double   iMaxTF = this.hashMapDocs.get(sDocName).getLeft()[0];
             for (int iIndex = 0, sWordsLength = sWords.length; iIndex < sWordsLength; iIndex++)
             {
-                String sWord  = sWords[iIndex];
-                double idf    = this.dictionary.get(sWord).getMiddle();
+                String sWord = sWords[iIndex];
+                if (this.stopWords.contains(sWord))
+                {
+                    continue;
+                }
                 int    iTF    = fnGetTF(sWord, sDocName);
-                double dGrade = iTF * idf;
+                double dGrade = iTF / iMaxTF;
                 result.add(new MutablePair<>(sWord, dGrade));
             }
 
@@ -261,13 +267,13 @@ public class Searcher
         long     lPointer = this.dictionary.get(sWord).getRight();
         String   sLine;
         String[] strings;
-        int      iResult  = -1;
+        int      iResult  = 0;
         if (-1 == lPointer)
         {
             sLine = this.cache.get(sWord).getLeft();
             strings = sLine.split("!#");
             iResult = fnGetTFFRomLine(strings, sDocName);
-            if (iResult == -1)
+            if (iResult == 0)
             {
                 try
                 {
@@ -308,9 +314,10 @@ public class Searcher
 
     private int fnGetTFFRomLine(String[] strings, String sDocName)
     {
-        for (int iIndex = 0, iLength = strings.length; iIndex < iLength; iIndex++)
+        for (int iIndex = 1, iLength = strings.length; iIndex < iLength; iIndex++)
         {
             String sDocTemp = strings[iIndex];
+
             iIndex++;
             if (sDocName.equals(sDocTemp))
             {
@@ -318,7 +325,7 @@ public class Searcher
                 return Integer.parseInt(sNum);
             }
         }
-        return -1;
+        return 0;
     }
 
     private Documnet.Document fnGetCorrectDoc(ArrayList<Documnet.Document> docs, String sDocName)
@@ -329,8 +336,14 @@ public class Searcher
         {
             Documnet.Document document  = docs.get(i);
             StringBuilder     sbDocName = new StringBuilder(document.getName());
-            sbDocName.deleteCharAt(0);
-            sbDocName.deleteCharAt(sbDocName.length() - 1);
+            if (sbDocName.charAt(0) == ' ')
+            {
+                sbDocName.deleteCharAt(0);
+            }
+            if (sbDocName.charAt(sbDocName.length() - 1) == ' ')
+            {
+                sbDocName.deleteCharAt(sbDocName.length() - 1);
+            }
             if (String.valueOf(sbDocName).equals(sDocName))
             {
                 return document;

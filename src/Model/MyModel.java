@@ -11,15 +11,13 @@ import Searcher.Searcher;
 import Stemmer.PorterStemmer;
 import Tuple.MutablePair;
 import Tuple.MutableTriple;
+import org.jsoup.Jsoup;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Observable;
-import java.util.TreeSet;
+import java.util.*;
 
 
 /**
@@ -118,15 +116,27 @@ public class MyModel extends Observable
                 StringBuilder sbTextToParse = listDocumentInFile.get(iIndex2).getText();
                 StringBuilder sbDocName     = new StringBuilder(listDocumentInFile.get(iIndex2).getName());
                 String        sDocFile      = listDocumentInFile.get(iIndex2).getsFileName();
+                if (sbDocName.charAt(0) == ' ')
+                {
+                    sbDocName.deleteCharAt(0);
+                }
+                if (sbDocName.charAt(sbDocName.length() - 1) == ' ')
+                {
+                    sbDocName.deleteCharAt(sbDocName.length() - 1);
+                }
 
-                sbDocName.deleteCharAt(0);
-                sbDocName.deleteCharAt(sbDocName.length() - 1);
 
-                MutablePair<ArrayList<Term>, int[]> m = parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
-                //this.indexer.fnAddDoc(String.valueOf(sbDocName), m.getRight(), sDocFile);
+                org.jsoup.nodes.Document doc = Jsoup.parse(String.valueOf(sbTextToParse));
+                sbTextToParse = new StringBuilder(doc.text());
+                MutablePair<ArrayList<Term>, int[]> m           = parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
+                int                                 iCurrLength = mDocInfo.size();
                 listOfTerms.addAll(m.getLeft());
                 double[] d = {m.getRight()[0], m.getRight()[1], 0};
                 mDocInfo.put(String.valueOf(sbDocName), new MutablePair<>(d, sDocFile));
+                if (mDocInfo.size() == iCurrLength)
+                {
+                    System.out.println();
+                }
             }
             if (this.bToStem)
             {
@@ -472,14 +482,33 @@ public class MyModel extends Observable
 
     public void fnSetPostingFileReader(String sReadPosting)
     {
-        this.ranker.fnRandomAccessFileInitialize(sReadPosting);
+        //this.ranker.fnRandomAccessFileInitialize(sReadPosting);
+        if (this.searcher == null)
+        {
+            this.searcher = new Searcher(bToStem, this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
+            HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\Shaked\\Downloads\\corpus\\corpus\\stop_words.txt");
+            this.searcher.fnSetStopWords(stopWords);
+        }
         this.searcher.fnInitializeReader(sReadPosting);
     }
     //todo : add all the new funcs
     //TODO: complete this.
     public String[] fnMostImportant(String sDocName)
     {
-        return null;
+        if (this.searcher == null)
+        {
+            this.searcher = new Searcher(bToStem, this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
+            HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\Shaked\\Downloads\\corpus\\corpus\\stop_words.txt");
+            this.searcher.fnSetStopWords(stopWords);
+        }
+        ArrayList<MutablePair<String, Double>> arrayListPairs = this.searcher.fnMostImportant(sDocName);
+        String[]                               result         = new String[5];
+        for (int iIndex = 0, iSize = arrayListPairs.size(); iIndex < iSize && iIndex < 5; iIndex++)
+        {
+            MutablePair<String, Double> pair = arrayListPairs.get(iIndex);
+            result[iIndex] = pair.getLeft();
+        }
+        return result;
     }
 
     public void fnNormalSearch(String Query){}

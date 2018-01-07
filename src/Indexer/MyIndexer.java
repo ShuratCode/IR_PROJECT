@@ -164,6 +164,7 @@ public class MyIndexer
             {
                 String[]           arrTerms               = fnGetTermsName(arrayStringLines, arrFilesDone); //get all the terms from each line
                 String             sMinTerm               = fnGetMinTerm(arrTerms, iIndex, iSize);
+
                 ArrayList<Integer> arrayListSmallestIndex = fnGetSmallest(arrFilesDone, sMinTerm, arrTerms, iIndex, iSize);
                 StringBuilder      sbLineToWrite          = fnCreateConstLine(arrayStringLines, arrayListSmallestIndex);
 
@@ -226,7 +227,10 @@ public class MyIndexer
             String sDoc = pair.getLeft();
 
             float  fIdf   = this.dictionary.get(sMinTerm).getMiddle();
-            double dGrade = fIdf * pair.getRight();
+            double dTF    = pair.getRight();
+            double dMax   = this.hashmapDocs.get(sDoc).getLeft()[0];
+            double tf     = dTF / dMax;
+            double dGrade = fIdf * tf;
             dGrade = Math.pow(dGrade, 2);
 
             double dCurr = this.hashmapDocs.get(sDoc).getLeft()[2];
@@ -264,7 +268,7 @@ public class MyIndexer
             MutablePair<String, Integer> pair = pairs.poll();
             sbForCache.append(pair.toString());
         }
-
+        long lPointer = raf.getFilePointer();
         this.cache.put(sMinTerm, new MutablePair<>(String.valueOf(sbForCache), raf.getFilePointer()));
         int iSize = pairs.size();
         for (int i = 0; i < iSize; i++)
@@ -1145,11 +1149,11 @@ public class MyIndexer
         String sPathForGrades;
         if (bToStem)
         {
-            sPathForGrades = "Resources\\Stemmed Grades";
+            sPathForGrades = sPathForObjects + "\\Stemmed Grades";
         }
         else
         {
-            sPathForGrades = "Resources\\Non Stemmed Docs Grades";
+            sPathForGrades = sPathForObjects + "\\Non Stemmed Docs Grades";
         }
         File              source      = new File(sPathForGrades);
         ObjectInputStream inputStream = null;

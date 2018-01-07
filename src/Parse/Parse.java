@@ -1,6 +1,8 @@
 package Parse;
 
 import Tuple.MutablePair;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +31,7 @@ public class Parse
    * @return arraylist of terms
    */
   public MutablePair<ArrayList<Term>,int[]> fnParseText1 (StringBuilder sbText , String docName){
+
     String[]                arrStringWords = sbText.toString().split("[ \t\n\r\f:;?!'`/|()<#>*&+=]");  // delimeters
     String                  sWord , dd , mm, yyyy , bigLetters, number;
     int                     orgLen;
@@ -404,19 +407,81 @@ public class Parse
 
     public ArrayList<String> fnGetSentences(StringBuilder sbText)
     {
-        String[]          sLines = String.valueOf(sbText).split(".");
+
+
+        Document doc = Jsoup.parse(String.valueOf(sbText));
+
         ArrayList<String> result = new ArrayList<>();
+
+        String[]      sLines = String.valueOf(doc.text()).split("[ :;!?,\n\r\t\f\\[\\]]+");
+        StringBuilder sb     = new StringBuilder();
+
         for (int i = 0, sLinesLength = sLines.length; i < sLinesLength; i++)
         {
-            String sLine = sLines[i];
-            if (sLine.equals("") || !sLine.contains(" "))
+            String sWord = sLines[i];
+            sWord = sWord.toLowerCase();
+            if (fnIsShortcut(sWord))
             {
+                sb.append(sWord).append(" ");
                 continue;
             }
-            result.add(sLine);
+            int iNum = fnCountNumOfChar('.', sWord);
+            if (0 == iNum)
+            {
+                sb.append(sWord).append(" ");
+                continue;
+            }
+            if (iNum > 1)
+            {
+                sb.append(sWord).append(" ");
+                continue;
+            }
+            sb.append(sWord);
+            result.add(String.valueOf(sb));
+            sb = new StringBuilder();
 
         }
 
         return result;
+
+    }
+
+    private int fnCountNumOfChar(char c, String sWord)
+    {
+        int iResult = 0;
+        for (int i = 0, iSize = sWord.length(); i < iSize; i++)
+        {
+            if (c == sWord.charAt(i))
+            {
+                iResult++;
+            }
+        }
+        return iResult;
+    }
+
+    private boolean fnIsShortcut(String s)
+    {
+        switch (s.toLowerCase())
+        {
+            case "dr.":
+                return true;
+            case "mr.":
+                return true;
+            case "ms.":
+                return true;
+            case "lt.":
+                return true;
+            case "col.":
+                return true;
+            case "minister.":
+                return true;
+            case "jan.":
+                return true;
+            case "feb.":
+                return true;
+
+        }
+        return false;
     }
 }
+

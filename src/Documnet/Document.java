@@ -33,7 +33,7 @@ public class Document implements Serializable
                 iIndexOfStartText = sbDoc.indexOf("<P>");
                 if (-1 != iIndexOfStartText)
                 {
-                    iIndexOfEndText = sbDoc.indexOf("</P>");
+                    iIndexOfEndText = sbDoc.lastIndexOf("</P>");
                     this.sbText = new StringBuilder(sbDoc.substring(iIndexOfStartText + 10, iIndexOfEndText));
                 }
             }
