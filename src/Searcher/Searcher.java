@@ -12,10 +12,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 public class Searcher
 {
@@ -43,7 +40,7 @@ public class Searcher
         this.readFile = new ReadFile();
         this.dictionary = dictionary;
         this.cache = cache;
-        this.ranker=new Ranker(hashMapDocs,dictionary,cache);
+        this.ranker = new Ranker(hashMapDocs, dictionary, cache);
     }
 
     //TODO: complete javadoc
@@ -55,37 +52,49 @@ public class Searcher
      * @param sQuery the query to search in the database
      * @return parsed words.
      */
-    public String[] fnSearch(StringBuilder sQuery)
+    public ArrayList<Map.Entry<String, Double>> fnSearch(StringBuilder sQuery)
     {
-        MutablePair<ArrayList<Term>, int[]> pair = parse.fnParseText1(sQuery, "");
+        MutablePair<ArrayList<Term>, int[]> pair           = parse.fnParseText1(sQuery, "");
         String[]                            result;
         String[]                            sQueryWords;
+        ArrayList<String>                   arrayListQuery = new ArrayList<>();
         if (bWikipedia)
         {
             String[] arrayWordsFromWikipedia = fnGetWordsFromWikipedia(sQuery);
             //TODO: continue this
-            sQueryWords = null;
+
+
+            arrayListQuery.add(String.valueOf(sQuery));
+            arrayListQuery.add(arrayWordsFromWikipedia[0]);
+            arrayListQuery.add(arrayWordsFromWikipedia[1]);
+            arrayListQuery.add(arrayWordsFromWikipedia[2]);
+            arrayListQuery.add(arrayWordsFromWikipedia[3]);
+            arrayListQuery.add(arrayWordsFromWikipedia[4]);
+            return this.ranker.fnGetBestDocs(arrayListQuery, 70);
         }
         else
         {
-            sQueryWords = new String[pair.getLeft().size()];
+
             ArrayList<Term> left = pair.getLeft();
             for (int i = 0, leftSize = left.size(); i < leftSize; i++)
             {
                 Term term = left.get(i);
                 if (bToStem)
                 {
-                    sQueryWords[i] = this.stemmer.stemTerm(term.getsName());
+                    String sWord = this.stemmer.stemTerm(term.getsName());
+                    arrayListQuery.add(sWord);
                 }
                 else
                 {
-                    sQueryWords[i] = term.getsName();
+                    String sWord = term.getsName();
+                    arrayListQuery.add(sWord);
                 }
 
             }
+            return this.ranker.fnGetBestDocs(arrayListQuery, 50);
 
         }
-        return null;
+
     }
 
     public String[] fnGetWordsFromWikipedia(StringBuilder sQuery)
@@ -233,7 +242,8 @@ public class Searcher
             {
                 ArrayList<String>                      sLines = this.parse.fnGetSentences(doc.getText());
                 ArrayList<MutablePair<String, Double>> pairs  = fnGetLinesGrades(sLines, sDocName);
-                pairs.sort((o1, o2) -> (int) (o2.getRight() - o1.getRight()));
+                pairs.sort(Comparator.comparingDouble(MutablePair::getRight));
+                Collections.reverse(pairs);
                 return pairs;
             }
 
@@ -246,41 +256,67 @@ public class Searcher
         ArrayList<MutablePair<String, Double>> result = new ArrayList<>();
         for (int i = 0, sLinesSize = sLines.size(); i < sLinesSize; i++)
         {
-            String   sLine  = sLines.get(i);
-            String[] sWords = sLine.split("[ ]");
-            double   iMaxTF = this.hashMapDocs.get(sDocName).getLeft()[0];
-            for (int iIndex = 0, sWordsLength = sWords.length; iIndex < sWordsLength; iIndex++)
+            String                              sLine         = sLines.get(i);
+            MutablePair<ArrayList<Term>, int[]> pair          = this.parse.fnParseText1(new StringBuilder(sLine), sDocName);
+            ArrayList<Term>                     termArrayList = pair.getLeft();
+            double                              iMaxTF        = this.hashMapDocs.get(sDocName).getLeft()[0];
+            double                              dLineGrade    = 0;
+            for (int iIndex = 0, sWordsLength = termArrayList.size(); iIndex < sWordsLength; iIndex++)
             {
-                String sWord = sWords[iIndex];
+                String sWord = termArrayList.get(iIndex).getsName();
                 if (this.stopWords.contains(sWord))
                 {
                     continue;
                 }
                 int    iTF    = fnGetTF(sWord, sDocName);
                 double dGrade = iTF / iMaxTF;
-                result.add(new MutablePair<>(sWord, dGrade));
+                //result.add(new MutablePair<>(sWord, dGrade));
+                dLineGrade += dGrade;
             }
-
+            result.add(new MutablePair<>(sLine, dLineGrade));
         }
         return result;
     }
 
     private int fnGetTF(String sWord, String sDocName)
     {
-        long     lPointer = this.dictionary.get(sWord).getRight();
-        String   sLine;
-        String[] strings;
-        int      iResult  = 0;
-        if (-1 == lPointer)
+        MutableTriple<Integer[], Float, Long> triple = this.dictionary.get(sWord);
+        if (null != triple)
         {
-            sLine = this.cache.get(sWord).getLeft();
-            strings = sLine.split("!#");
-            iResult = fnGetTFFRomLine(strings, sDocName);
-            if (iResult == 0)
+            long     lPointer = triple.getRight();
+            String   sLine;
+            String[] strings;
+            int      iResult  = 0;
+            if (-1 == lPointer)
+            {
+                sLine = this.cache.get(sWord).getLeft();
+                strings = sLine.split("!#");
+                iResult = fnGetTFFRomLine(strings, sDocName);
+                if (iResult == 0)
+                {
+                    try
+                    {
+                        lPointer = this.cache.get(sWord).getRight();
+                        this.randomAccessFile.seek(lPointer);
+                        sLine = this.randomAccessFile.readLine();
+                        strings = sLine.split("!#");
+                        iResult = fnGetTFFRomLine(strings, sDocName);
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+                else
+                {
+                    return iResult;
+                }
+
+            }
+            else
             {
                 try
                 {
-                    lPointer = this.cache.get(sWord).getRight();
                     this.randomAccessFile.seek(lPointer);
                     sLine = this.randomAccessFile.readLine();
                     strings = sLine.split("!#");
@@ -291,28 +327,11 @@ public class Searcher
                     e.printStackTrace();
                 }
             }
-            else
-            {
-                return iResult;
-            }
+
+            return iResult;
 
         }
-        else
-        {
-            try
-            {
-                this.randomAccessFile.seek(lPointer);
-                sLine = this.randomAccessFile.readLine();
-                strings = sLine.split("!#");
-                iResult = fnGetTFFRomLine(strings, sDocName);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        return iResult;
+        return 0;
     }
 
     private int fnGetTFFRomLine(String[] strings, String sDocName)

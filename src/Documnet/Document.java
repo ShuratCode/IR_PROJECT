@@ -23,6 +23,7 @@ public class Document implements Serializable
         int iIndexOfEndName   = sbDoc.indexOf("</DOCNO>");
         this.sName = sbDoc.substring(iIndexOfStartName + 7, iIndexOfEndName);
 
+
         int iIndexOfStartText = sbDoc.indexOf("<TEXT>");
         int iIndexOfEndText;
         if (-1 == iIndexOfStartText)

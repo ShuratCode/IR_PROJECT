@@ -97,6 +97,7 @@ public class ReadFile
         BufferedReader    bfReader = null;
         try
         {
+
             bfReader = new BufferedReader(new FileReader(fileToRead));
             String sLine;
 

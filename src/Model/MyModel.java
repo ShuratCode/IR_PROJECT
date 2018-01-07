@@ -133,10 +133,7 @@ public class MyModel extends Observable
                 listOfTerms.addAll(m.getLeft());
                 double[] d = {m.getRight()[0], m.getRight()[1], 0};
                 mDocInfo.put(String.valueOf(sbDocName), new MutablePair<>(d, sDocFile));
-                if (mDocInfo.size() == iCurrLength)
-                {
-                    System.out.println();
-                }
+
             }
             if (this.bToStem)
             {
@@ -515,7 +512,7 @@ public class MyModel extends Observable
         }
         finally
         {
-            if (null == bw)
+            if (null != bw)
             {
                 try
                 {
