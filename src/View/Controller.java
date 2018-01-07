@@ -10,7 +10,6 @@ import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
-import javax.jws.WebParam;
 import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
@@ -147,7 +146,7 @@ public class Controller implements Observer {
         }
     }
 /****************************************************funcs for part B**************************************/
-
+/*
     public void fnRunSimpleQ(){
         if(cbExtendQ.isSelected()){
             //todo: check data
@@ -166,7 +165,7 @@ public class Controller implements Observer {
 
     public void fnResetQH(){
         Model.fnResetQHistory();
-    }
+    }*/
     @Override
     public void update(Observable o, Object arg) {
         String s=(String)arg;
@@ -193,4 +192,5 @@ public class Controller implements Observer {
 
         }
     }
+
 }

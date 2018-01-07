@@ -358,14 +358,10 @@ public class MyModel extends Observable
     private PriorityQueue<MutablePair<String, Float>> fnCreateCahce()
     {
         HashMap<String, MutableTriple<Integer[], Float, Long>> hashMap = this.indexer.getDictionary();
-        PriorityQueue<MutablePair<String, Float>> pairs = new PriorityQueue<>(new Comparator<MutablePair<String, Float>>()
+        PriorityQueue<MutablePair<String, Float>> pairs = new PriorityQueue<>((o1, o2) ->
         {
-            @Override
-            public int compare(MutablePair<String, Float> o1, MutablePair<String, Float> o2)
-            {
-                float f = o1.getRight() - o2.getRight();
-                return (f < 0 ? -1 : (f > 0) ? 1 : 0);
-            }
+            float f = o1.getRight() - o2.getRight();
+            return (f < 0 ? -1 : (f > 0) ? 1 : 0);
         });
 
         for (String sTerm : hashMap.keySet())
@@ -574,55 +570,5 @@ public class MyModel extends Observable
         return indexer.getCache();
     }
 
-    private PriorityQueue<MutablePair<String, Float>> fnCreateCahce()
-    {
-        HashMap<String, MutableTriple<Integer[], Float, Long>> hashMap = this.indexer.getDictionary();
-        PriorityQueue<MutablePair<String, Float>> pairs = new PriorityQueue<>(new Comparator<MutablePair<String, Float>>()
-        {
-            @Override
-            public int compare(MutablePair<String, Float> o1, MutablePair<String, Float> o2)
-            {
-                float f = o1.getRight() - o2.getRight();
-                return (f < 0 ? -1 : (f > 0) ? 1 : 0);
-            }
-        });
 
-        for (String sTerm : hashMap.keySet())
-        {
-            pairs.add(new MutablePair<>(sTerm, hashMap.get(sTerm).getMiddle()));
-        }
-
-        return pairs;
-    }
-
-    private void fnWriteCahce()
-    {
-        File file = new File("Resources\\Cache");
-        if (!file.exists())
-        {
-            try
-            {
-                file.createNewFile();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        try
-        {
-            BufferedWriter                            bf    = new BufferedWriter(new FileWriter(file));
-            PriorityQueue<MutablePair<String, Float>> pairs = fnCreateCahce();
-            for (MutablePair<String, Float> pair : pairs)
-            {
-                bf.write(pair.getLeft());
-                bf.newLine();
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
 }
