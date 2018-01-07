@@ -35,18 +35,21 @@ public class Document implements Serializable
                 {
                     iIndexOfEndText = sbDoc.lastIndexOf("</P>");
                     this.sbText = new StringBuilder(sbDoc.substring(iIndexOfStartText + 10, iIndexOfEndText));
+
                 }
             }
             else
             {
                 iIndexOfEndText = sbDoc.indexOf("</DATELINE>");
                 this.sbText = new StringBuilder(sbDoc.substring(iIndexOfStartText + 6, iIndexOfEndText));
+
             }
         }
         else
         {
             iIndexOfEndText = sbDoc.indexOf("</TEXT>");
             this.sbText = new StringBuilder(sbDoc.substring(iIndexOfStartText + 6, iIndexOfEndText));
+
         }
 
 

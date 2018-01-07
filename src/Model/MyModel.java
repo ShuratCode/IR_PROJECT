@@ -126,8 +126,8 @@ public class MyModel extends Observable
                 }
 
 
-                org.jsoup.nodes.Document doc = Jsoup.parse(String.valueOf(sbTextToParse));
-                sbTextToParse = new StringBuilder(doc.text());
+               // org.jsoup.nodes.Document doc = Jsoup.parse(String.valueOf(sbTextToParse));
+                sbTextToParse = new StringBuilder(sbTextToParse);
                 MutablePair<ArrayList<Term>, int[]> m           = parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
                 int                                 iCurrLength = mDocInfo.size();
                 listOfTerms.addAll(m.getLeft());
