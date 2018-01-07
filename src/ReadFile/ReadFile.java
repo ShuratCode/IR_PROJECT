@@ -157,6 +157,7 @@ public class ReadFile
             }
             else
             {
+                sbResult.append(' ');
                 sbResult.append(sLine);
             }
 

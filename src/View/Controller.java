@@ -49,7 +49,7 @@ public class Controller implements Observer {
     }
     public void startIndexing(){
         try {
-            Model = new MyModel(tIn.getText(), cStemer.isSelected(), tOut.getText(), 10);
+            Model = new MyModel(tIn.getText(), cStemer.isSelected(), tOut.getText(), 15);
             Model.addObserver(this);
             bStartIndexing.setDisable(true);
             bReset.setDisable(true);

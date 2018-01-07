@@ -32,7 +32,7 @@ public class Parse
    */
   public MutablePair<ArrayList<Term>,int[]> fnParseText1 (StringBuilder sbText , String docName){
 
-    String[]                arrStringWords = sbText.toString().split("[ \t\n\r\f:;?!'`/|()<#>*&+=]");  // delimeters
+    String[]                arrStringWords = sbText.toString().split("[ \t\n\r\f:;?!`/|()<#>*&+=]");  // delimeters
     String                  sWord , dd , mm, yyyy , bigLetters, number;
     int                     orgLen;
       HashMap<String, Term> termMap        = new HashMap<>();
@@ -40,17 +40,22 @@ public class Parse
     for (int iIndex = 0, arrayStringWordsLength = arrStringWords.length; iIndex < arrayStringWordsLength; iIndex++)
     {
       sWord = arrStringWords[iIndex];
+      sWord = fnCleanStart(sWord);
       orgLen=sWord.length();
-      sWord = fnCleanS(sWord);
-        isDirty = orgLen != sWord.length();
+      isDirty = orgLen != sWord.length();
       if(sWord.length()<=1) {continue;}
       if('a'<=sWord.charAt(0)&&'z'>=sWord.charAt(0)){
+          sWord = fnCleanS(sWord);
+          orgLen=sWord.length();
           sWord=fnRemoveAllCharOfKind(sWord,'.'); sWord=fnRemoveAllCharOfKind(sWord,',');
           isDirty = orgLen != sWord.length();
           if(sWord.length()<=1||isDirty){continue;}
           if(hashSetStopWords.contains(sWord)){continue;}
           if(termMap.containsKey(sWord)){
               termMap.get(sWord).raisC();}
+          if(sWord.equals("allowknowledgeable")){// delete
+              System.out.println();
+          }
           else{termMap.put(sWord,new Term(sWord,docName,1,iIndex,1));}
       }
       else if('A'<=sWord.charAt(0)&&'Z'>=sWord.charAt(0))//if big letter
@@ -84,10 +89,25 @@ public class Parse
           }
         else {// parsing big letters
 
-            sWord = fnRemoveAllCharOfKind(sWord, '.');
-            sWord = fnRemoveAllCharOfKind(sWord, ',');
+            //sWord = fnRemoveAllCharOfKind(sWord, '.');
+            //sWord = fnRemoveAllCharOfKind(sWord, ',');
+            sWord=fnCleanS(sWord);
             isDirty = orgLen != sWord.length();
-            if(sWord.length()<=1||isDirty){continue;}
+            if(sWord.length()>1&&isDirty){
+                if (!this.hashSetStopWords.contains(sWord = sWord.toLowerCase())&& !Objects.equals(sWord, "")) {
+                    if (termMap.containsKey(sWord)) {
+                        termMap.get(sWord).raisC();
+                        if(sWord.equals("allowknowledgeable")){// delete
+                            System.out.println();
+                        }
+                    } else {
+                        termMap.put(sWord, new Term(sWord, docName, 1, iIndex, 1));
+                        continue;
+                    }
+
+                }
+            }
+            if(sWord.length()<=1){continue;}
             sWord = sWord.toLowerCase();
             if(Objects.equals(sWord, "mr")||Objects.equals(sWord, "ms")||Objects.equals(sWord, "mrs")||Objects.equals(sWord, "miss")){
                 continue;
@@ -98,6 +118,9 @@ public class Parse
                     if (!this.hashSetStopWords.contains(sWord = sWord.toLowerCase())&& !Objects.equals(sWord, "")) {
                         if (termMap.containsKey(sWord)) {
                             termMap.get(sWord).raisC();
+                            if(sWord.equals("allowknowledgeable")){// delete
+                                System.out.println();
+                            }
                         } else {
                             termMap.put(sWord, new Term(sWord, docName, 1, iIndex, 1));
                         }
@@ -114,6 +137,9 @@ public class Parse
                             break;
                         }
                         bigLetters += (" " + sWord);
+                        if(sWord.equals("allowknowledgeable")){// delete
+                            System.out.println();
+                        }
                     } else break;
                 }
                 if (bigLetters.length() != sWord.length()&& !Objects.equals(bigLetters, "")) {// save the hole thing if needed
@@ -122,6 +148,9 @@ public class Parse
                     } else {
                         if(bigLetters.charAt(bigLetters.length()-1)==' '){
                             continue;
+                        }
+                        if(sWord.equals("allowknowledgeable")){// delete
+                            System.out.println();
                         }
                         termMap.put(bigLetters, new Term(bigLetters, docName, 1, iIndex, 5));
                     }
@@ -211,6 +240,9 @@ public class Parse
                       if(hashSetStopWords.contains(number)){continue;}
                       if(termMap.containsKey(number))
                             termMap.get(number).raisC();
+                      if(sWord.equals("allowknowledgeable")){// delete
+                          System.out.println();
+                      }
                       else{termMap.put(number,new Term(number,docName,1,iIndex,4));}
                   }
               }
@@ -267,11 +299,17 @@ public class Parse
           s = s.substring(0, iSize - 1);
           iSize--;
       }
-
       if((idx=s.indexOf('-'))!=-1){ s="";}
     return s;
   }
 
+  private String fnCleanStart(String s){
+      while(s.length()>0 &&(s.charAt(0)==','||s.charAt(0)=='.' ||s.charAt(0)=='/' || s.charAt(0) == '"' || s.charAt(0) == '['||s.charAt(0) == ']'||s.charAt(0) == '-')){
+          s=s.substring(1);
+
+      }
+      return s;
+  }
     /**
      * used to check is the srting is a valid month
      * @param sWord
