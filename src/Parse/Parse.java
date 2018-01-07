@@ -117,6 +117,9 @@ public class Parse
                     if (termMap.containsKey(bigLetters = bigLetters.toLowerCase())) {
                         termMap.get(bigLetters).raisC();
                     } else {
+                        if(bigLetters.charAt(bigLetters.length()-1)==' '){
+                            continue;
+                        }
                         termMap.put(bigLetters, new Term(bigLetters, docName, 1, iIndex, 5));
                     }
                 }
