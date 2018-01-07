@@ -2,6 +2,7 @@ package Searcher;
 
 import Parse.Parse;
 import Parse.Term;
+import Ranker.Ranker;
 import ReadFile.ReadFile;
 import Stemmer.PorterStemmer;
 import Tuple.MutablePair;
@@ -28,6 +29,7 @@ public class Searcher
     private RandomAccessFile                                       randomAccessFile;
     private HashMap<String, MutablePair<String, Long>>             cache;
     private HashSet<String>                                        stopWords;
+    private Ranker                                                 ranker;
 
 
     public Searcher(boolean bToStem, HashMap<String, MutablePair<double[], String>> hashMapDocs, String sCorpusPath,
@@ -41,6 +43,7 @@ public class Searcher
         this.readFile = new ReadFile();
         this.dictionary = dictionary;
         this.cache = cache;
+        this.ranker=new Ranker(hashMapDocs,dictionary,cache);
     }
 
     //TODO: complete javadoc

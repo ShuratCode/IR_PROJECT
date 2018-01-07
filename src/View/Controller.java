@@ -10,6 +10,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
+import javax.jws.WebParam;
 import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
@@ -20,11 +21,11 @@ public class Controller implements Observer {
     private MyModel Model;
     private boolean isLoad;
     @FXML
-    private TextField tIn,tOut;
+    private TextField tIn,tOut, tQuery;
     @FXML
-    private Button bStartIndexing, bSaveDC,bLoadDC,bSelectRoot,bSelectDest,bShowCache,bShowDic,bReset;
+    private Button bStartIndexing, bSaveDC,bLoadDC,bSelectRoot,bSelectDest,bShowCache,bShowDic,bReset,bResetQH;
     @FXML
-    private CheckBox cStemer;
+    private CheckBox cStemer,cbExtendQ, cbTop5S ;
     @FXML
     private Label DBInfo;
 
@@ -145,7 +146,27 @@ public class Controller implements Observer {
             }
         }
     }
+/****************************************************funcs for part B**************************************/
 
+    public void fnRunSimpleQ(){
+        if(cbExtendQ.isSelected()){
+            //todo: check data
+            Model.fnExtendQ(tQuery.getText());
+        }
+        else if(cbTop5S.isSelected()){
+            Model.fnTop5(tQuery.getText());
+        }
+        else Model.fnRunSimpleQuery(tQuery.getText());
+
+    }
+
+    public void fnRunFileQ(){
+        Model.fnRunFileQuery();
+    }
+
+    public void fnResetQH(){
+        Model.fnResetQHistory();
+    }
     @Override
     public void update(Observable o, Object arg) {
         String s=(String)arg;
