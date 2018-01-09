@@ -406,9 +406,9 @@ public class MyModel extends Observable
     public void fnLoadObjects(String sPathForObjects)
     {
         this.indexer.setPathForObjects(sPathForObjects);
-        if (this.sPathForPosting.equals(""))
+        if (this.sPathForPosting.equals("\\Posting"))
         {
-            File file = new File(sPathForObjects + "cacheStemmed");
+            File file = new File(sPathForObjects + "\\cacheStemmed");
             if (file.exists())
             {
                 this.bToStem = true;
@@ -427,7 +427,7 @@ public class MyModel extends Observable
         this.searcher=new Searcher(bToStem,this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
         HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\IBM_ADMIN\\IdeaProjects\\test1\\corpus\\stop_words.txt");
         this.searcher.fnSetStopWords(stopWords);
-        fnSetPostingFileReader("C:\\Users\\IBM_ADMIN\\IdeaProjects\\Posting\\Non Stemmed\\ConstPost.txt");
+        fnSetPostingFileReader("C:\\Users\\IBM_ADMIN\\IdeaProjects\\Posting\\Stemmed\\ConstPost.txt");
 
         setChanged();
         notifyObservers("Load objects end");
