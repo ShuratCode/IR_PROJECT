@@ -53,9 +53,6 @@ public class Parse
           if(hashSetStopWords.contains(sWord)){continue;}
           if(termMap.containsKey(sWord)){
               termMap.get(sWord).raisC();}
-          if(sWord.equals("allowknowledgeable")){// delete
-              System.out.println();
-          }
           else{termMap.put(sWord,new Term(sWord,docName,1,iIndex,1));}
       }
       else if('A'<=sWord.charAt(0)&&'Z'>=sWord.charAt(0))//if big letter
@@ -97,9 +94,6 @@ public class Parse
                 if (!this.hashSetStopWords.contains(sWord = sWord.toLowerCase())&& !Objects.equals(sWord, "")) {
                     if (termMap.containsKey(sWord)) {
                         termMap.get(sWord).raisC();
-                        if(sWord.equals("allowknowledgeable")){// delete
-                            System.out.println();
-                        }
                     } else {
                         termMap.put(sWord, new Term(sWord, docName, 1, iIndex, 1));
                         continue;
@@ -118,9 +112,6 @@ public class Parse
                     if (!this.hashSetStopWords.contains(sWord = sWord.toLowerCase())&& !Objects.equals(sWord, "")) {
                         if (termMap.containsKey(sWord)) {
                             termMap.get(sWord).raisC();
-                            if(sWord.equals("allowknowledgeable")){// delete
-                                System.out.println();
-                            }
                         } else {
                             termMap.put(sWord, new Term(sWord, docName, 1, iIndex, 1));
                         }
@@ -137,9 +128,6 @@ public class Parse
                             break;
                         }
                         bigLetters += (" " + sWord);
-                        if(sWord.equals("allowknowledgeable")){// delete
-                            System.out.println();
-                        }
                     } else break;
                 }
                 if (bigLetters.length() != sWord.length()&& !Objects.equals(bigLetters, "")) {// save the hole thing if needed
@@ -148,9 +136,6 @@ public class Parse
                     } else {
                         if(bigLetters.charAt(bigLetters.length()-1)==' '){
                             continue;
-                        }
-                        if(sWord.equals("allowknowledgeable")){// delete
-                            System.out.println();
                         }
                         termMap.put(bigLetters, new Term(bigLetters, docName, 1, iIndex, 5));
                     }
@@ -240,9 +225,6 @@ public class Parse
                       if(hashSetStopWords.contains(number)){continue;}
                       if(termMap.containsKey(number))
                             termMap.get(number).raisC();
-                      if(sWord.equals("allowknowledgeable")){// delete
-                          System.out.println();
-                      }
                       else{termMap.put(number,new Term(number,docName,1,iIndex,4));}
                   }
               }

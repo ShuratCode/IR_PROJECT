@@ -3,11 +3,9 @@ package View;
 import Model.MyModel;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -20,13 +18,16 @@ public class Controller implements Observer {
     private MyModel Model;
     private boolean isLoad;
     @FXML
-    private TextField tIn,tOut, tQuery;
+    private TextField tIn,tOut, tQuery,tQueryName;
     @FXML
-    private Button bStartIndexing, bSaveDC,bLoadDC,bSelectRoot,bSelectDest,bShowCache,bShowDic,bReset,bResetQH;
+    private Button bStartIndexing, bSaveDC,bLoadDC,bSelectRoot,bSelectDest,bShowCache,bShowDic,bReset,bResetQH,bSaveQ;
     @FXML
     private CheckBox cStemer,cbExtendQ, cbTop5S ;
     @FXML
     private Label DBInfo;
+    @FXML
+    private TextArea tAreaDisplay;
+
 
     public Stage stage;
 
@@ -100,12 +101,11 @@ public class Controller implements Observer {
         File selectedDirectory = chooser.showDialog(stage);
         if(selectedDirectory!=null){
             Model=new MyModel("",false,"",10);
+            Model.addObserver(this);
             bStartIndexing.setDisable(true);
-            Model.fnLoadObjects(selectedDirectory.getPath());
-            bSaveDC.setDisable(false);
-            bShowCache.setDisable(false);
-            bShowDic.setDisable(false);
-            isLoad=true;
+            bLoadDC.setDisable(true);
+            new Thread(()->Model.fnLoadObjects(selectedDirectory.getPath())).start();
+
         }
     }
 
@@ -145,24 +145,32 @@ public class Controller implements Observer {
             }
         }
     }
-/****************************************************funcs for part B**************************************/
-/*
-    public void fnRunSimpleQ(){
-        if(cbExtendQ.isSelected()){
-            //todo: check data
-            Model.fnExtendQ(tQuery.getText());
-        }
-        else if(cbTop5S.isSelected()){
-            Model.fnTop5(tQuery.getText());
-        }
-        else Model.fnRunSimpleQuery(tQuery.getText());
 
+/****************************************************funcs for part B**************************************/
+
+    public void fnRunSimpleQ(){
+        if(cbTop5S.isSelected()){
+            Model.fnMostImportant(tQuery.getText());
+        }
+        else new Thread(()->Model.fnRunSimpleQuery(tQuery.getText(),cbExtendQ.isSelected())).start();
+
+
+    }
+
+    public void saveQ(){
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Select Root path");
+        File selectedDirectory = chooser.showDialog(stage);
+        Model.fnSaveQ(selectedDirectory.getPath()+"\\"+tQueryName.getText());
     }
 
     public void fnRunFileQ(){
-        Model.fnRunFileQuery();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select query file");
+        File selectedFile = fileChooser.showOpenDialog(stage);
+        Model.fnRunFileQuery(selectedFile.getPath());
     }
-
+/*
     public void fnResetQH(){
         Model.fnResetQHistory();
     }*/
@@ -188,6 +196,30 @@ public class Controller implements Observer {
             }
             case "input error":{
 
+            }
+            case "SimpleQ returned" :{
+                Platform.runLater(()->{
+                    DisplayQ d=new DisplayQ();
+                    d.display("Query results", Model.DisplayQ.toString());
+                });
+                break;
+            }
+            case "Load objects end":{
+                Platform.runLater(()->{
+                    bSaveDC.setDisable(false);
+                    bShowCache.setDisable(false);
+                    bShowDic.setDisable(false);
+                    bLoadDC.setDisable(false);
+                    isLoad=true;
+                });
+                break;
+            }
+            case "FileQ end" : {
+                Platform.runLater(()->{
+                    DisplayQ d=new DisplayQ();
+                    d.display("Query File results", Model.DisplayQ.toString());
+                });
+                break;
             }
 
         }
