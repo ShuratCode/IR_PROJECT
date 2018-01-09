@@ -642,9 +642,9 @@ public class MyModel extends Observable
                     if (sLine.contains("<desc> Description:"))
                     {
                         StringBuilder sb = new StringBuilder();
-                        while (!(sLine = br.readLine()).contains("<narr>"))
+                        while (!(sLine = br.readLine()).contains("</top>"))
                         {
-                            if (String.valueOf(sLine).equals(""))
+                            if (sLine.equals("") || sLine.contains("<narr>"))
                             {
                                 continue;
                             }
