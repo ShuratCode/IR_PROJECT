@@ -14,6 +14,9 @@ public class Ranker
     private RandomAccessFile                             randomAccessFile;
     private HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary;
     private HashMap<String, MutablePair<String, Long>>             cache;
+    private final double dAvgDocLength = 182.51711338024444;
+    private final double dK1Const      = 1.5;
+    private final double dBConst       = 0.75;
 
     public Ranker(HashMap<String, MutablePair<double[], String>> hashMapDocsGrades, HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary, HashMap<String, MutablePair<String, Long>> cache)
     {
@@ -66,7 +69,7 @@ public class Ranker
                         String sDocTemp = strings[iIndex];
                         double maxTFi=hashMapDocsGrades.get(sDocTemp).getLeft()[0];
                         iIndex++;
-                        int Fi=(int)Integer.parseInt(strings[iIndex]);
+                        int Fi = Integer.parseInt(strings[iIndex]);
                         if(rankList.containsKey(sDocTemp)){
                             rankList.put(sDocTemp,rankList.get(sDocTemp)+((((double)Fi)/maxTFi)*termIDF));
                         }
@@ -84,7 +87,7 @@ public class Ranker
                         String sDocTemp = strings[iIndex];
                         double maxTFi=hashMapDocsGrades.get(sDocTemp).getLeft()[0];
                         iIndex++;
-                        int Fi=(int)Integer.parseInt(strings[iIndex]);
+                        int Fi = Integer.parseInt(strings[iIndex]);
                         if(rankList.containsKey(sDocTemp)){
                             rankList.put(sDocTemp,rankList.get(sDocTemp)+((((double)Fi)/maxTFi)*termIDF));
                         }
@@ -140,4 +143,6 @@ public class Ranker
         }
 
     }
+
+
 }

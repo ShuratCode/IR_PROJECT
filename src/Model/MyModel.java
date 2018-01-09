@@ -126,8 +126,8 @@ public class MyModel extends Observable
                 }
 
 
-               // org.jsoup.nodes.Document doc = Jsoup.parse(String.valueOf(sbTextToParse));
-                sbTextToParse = new StringBuilder(sbTextToParse);
+                org.jsoup.nodes.Document doc = Jsoup.parse(String.valueOf(sbTextToParse));
+                sbTextToParse = new StringBuilder(doc.text());
                 MutablePair<ArrayList<Term>, int[]> m           = parse.fnParseText1(sbTextToParse, String.valueOf(sbDocName));
                 int                                 iCurrLength = mDocInfo.size();
                 listOfTerms.addAll(m.getLeft());
@@ -163,7 +163,7 @@ public class MyModel extends Observable
             long   endTime   = System.currentTimeMillis();
             double totalTime = (endTime - startTime) / Math.pow(10, 3);
             buildBDInfo = "" + fnCreateEndMessage(totalTime);
-            fnWriteCahce();
+            //fnWriteCahce();
         }
         catch (IOException e)
         {
@@ -567,5 +567,15 @@ public class MyModel extends Observable
         return indexer.getCache();
     }
 
+    public void fnGetAvgDocsLength()
+    {
+        double dFinal = 0;
+        for (MutablePair<double[], String> pair : this.indexer.getHashMapDocsGrade().values())
+        {
+            dFinal += pair.getLeft()[1];
+        }
+        dFinal = dFinal / 472525;
+        System.out.println(dFinal);
+    }
 
 }
