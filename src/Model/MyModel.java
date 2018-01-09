@@ -160,7 +160,7 @@ public class MyModel extends Observable
             long   endTime   = System.currentTimeMillis();
             double totalTime = (endTime - startTime) / Math.pow(10, 3);
             buildBDInfo = "" + fnCreateEndMessage(totalTime);
-            fnWriteCahce();
+            //fnWriteCahce();
         }
         catch (IOException e)
         {
