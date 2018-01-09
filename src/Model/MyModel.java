@@ -13,10 +13,7 @@ import Tuple.MutablePair;
 import Tuple.MutableTriple;
 import org.jsoup.Jsoup;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 
@@ -64,7 +61,7 @@ public class MyModel extends Observable
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
         this.ranker = null;
-        this.searcher=null;
+        this.searcher = null;
 
     }
 
@@ -163,7 +160,7 @@ public class MyModel extends Observable
             long   endTime   = System.currentTimeMillis();
             double totalTime = (endTime - startTime) / Math.pow(10, 3);
             buildBDInfo = "" + fnCreateEndMessage(totalTime);
-            //fnWriteCahce();
+            fnWriteCahce();
         }
         catch (IOException e)
         {
@@ -426,7 +423,7 @@ public class MyModel extends Observable
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
         this.indexer.fnReadDocsGrades(sPathForObjects);
-        this.mDocInfo=indexer.getHashMapDocsGrade();
+        this.mDocInfo = indexer.getHashMapDocsGrade();
     }
 
 
@@ -537,6 +534,7 @@ public class MyModel extends Observable
         }
         this.searcher.fnInitializeReader(sReadPosting);
     }
+
     //todo : add all the new funcs
     //TODO: complete this.
     public String[] fnMostImportant(String sDocName)
@@ -557,13 +555,18 @@ public class MyModel extends Observable
         return result;
     }
 
-    public void fnNormalSearch(String Query){}
-/***********************************to be deleted*****************************/
-    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic() {
+    public void fnNormalSearch(String Query)
+    {
+    }
+
+    /***********************************to be deleted*****************************/
+    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic()
+    {
         return indexer.getDictionary();
     }
 
-    public HashMap<String, MutablePair<String, Long>> fnGetCache() {
+    public HashMap<String, MutablePair<String, Long>> fnGetCache()
+    {
         return indexer.getCache();
     }
 
@@ -578,4 +581,68 @@ public class MyModel extends Observable
         System.out.println(dFinal);
     }
 
+    public ArrayList<MutablePair<String, StringBuilder>> fnTreck(String sPath)
+    {
+        BufferedReader                                br              = null;
+        ArrayList<MutablePair<String, StringBuilder>> arrayListResult = new ArrayList<>();
+        try
+        {
+            File file = new File(sPath);
+            if (file.exists())
+            {
+                br = new BufferedReader(new FileReader(file));
+                String sID = "";
+                String sLine;
+                while (null != (sLine = br.readLine()))
+                {
+                    if (sLine.contains("<num>"))
+                    {
+                        String[] strings = sLine.split(" ");
+                        sID = strings[2];
+                    }
+                    if (sLine.contains("<desc> Description:"))
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        while (!(sLine = br.readLine()).contains("<narr>"))
+                        {
+                            if (String.valueOf(sLine).equals(""))
+                            {
+                                continue;
+                            }
+                            sb.append(' ').append(sLine);
+                        }
+                        sb.deleteCharAt(0);
+                        MutablePair<String, StringBuilder> pair = new MutablePair<>(sID, sb);
+                        arrayListResult.add(pair);
+                    }
+                }
+                return arrayListResult;
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            return arrayListResult;
+        }
+        finally
+        {
+            if (null != br)
+            {
+                try
+                {
+                    br.close();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+        return arrayListResult;
+    }
 }
+
+
+
+
