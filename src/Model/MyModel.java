@@ -26,7 +26,7 @@ public class MyModel extends Observable
 
     public String                                         buildBDInfo;
     public HashMap<String, MutablePair<double[], String>> mDocInfo;
-
+    public StringBuilder DisplayQ, QtoSave;
     private ReadFile  readFile;
     private Parse     parse;
     private MyIndexer indexer;
@@ -423,7 +423,14 @@ public class MyModel extends Observable
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
         this.indexer.fnReadDocsGrades(sPathForObjects);
-        this.mDocInfo = indexer.getHashMapDocsGrade();
+        this.mDocInfo=indexer.getHashMapDocsGrade();
+        this.searcher=new Searcher(bToStem,this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
+        HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\IBM_ADMIN\\IdeaProjects\\test1\\corpus\\stop_words.txt");
+        this.searcher.fnSetStopWords(stopWords);
+        fnSetPostingFileReader("C:\\Users\\IBM_ADMIN\\IdeaProjects\\Posting\\Non Stemmed\\ConstPost.txt");
+
+        setChanged();
+        notifyObservers("Load objects end");
     }
 
 
@@ -529,7 +536,7 @@ public class MyModel extends Observable
         if (this.searcher == null)
         {
             this.searcher = new Searcher(bToStem, this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
-            HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\Shaked\\Downloads\\corpus\\corpus\\stop_words.txt");
+            HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\IBM_ADMIN\\IdeaProjects\\test1\\corpus\\stop_words.txt");
             this.searcher.fnSetStopWords(stopWords);
         }
         this.searcher.fnInitializeReader(sReadPosting);
@@ -542,7 +549,7 @@ public class MyModel extends Observable
         if (this.searcher == null)
         {
             this.searcher = new Searcher(bToStem, this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
-            HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\Shaked\\Downloads\\corpus\\corpus\\stop_words.txt");
+            HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\IBM_ADMIN\\IdeaProjects\\test1\\corpus\\stop_words.txt");
             this.searcher.fnSetStopWords(stopWords);
         }
         ArrayList<MutablePair<String, Double>> arrayListPairs = this.searcher.fnMostImportant(sDocName);
@@ -555,33 +562,65 @@ public class MyModel extends Observable
         return result;
     }
 
-    public void fnNormalSearch(String Query)
-    {
-    }
+    public void fnRunSimpleQuery(String Query , boolean extend){
 
-    /***********************************to be deleted*****************************/
-    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic()
-    {
-        return indexer.getDictionary();
-    }
+        long startTime = System.currentTimeMillis();
+        ArrayList<Map.Entry<String, Double>> ans=searcher.fnSearch(new StringBuilder(Query),extend );
+        int retC=ans.size();
+        String docN;
+        long   endTime   = System.currentTimeMillis();
+        double totalTime = (endTime - startTime) / Math.pow(10, 3);
+        QtoSave=new StringBuilder();
+        DisplayQ=new StringBuilder("Number of relevent document return: "+ String.valueOf(retC) + "\n");
+        DisplayQ.append("Processing time: "+ String.valueOf(totalTime)+"\n");
+        DisplayQ.append("Documents: ");
+        for(int i=0;i<retC;i++){
+            docN=ans.get(i).getKey();
+            DisplayQ.append(String.valueOf(docN)+", ");
+            if(i%5==0&&i!=0)
+                DisplayQ.append("\n");
+            QtoSave.append("1 1 "+ String.valueOf(docN)+" 1 1.0 mt\n");
 
-    public HashMap<String, MutablePair<String, Long>> fnGetCache()
-    {
-        return indexer.getCache();
-    }
-
-    public void fnGetAvgDocsLength()
-    {
-        double dFinal = 0;
-        for (MutablePair<double[], String> pair : this.indexer.getHashMapDocsGrade().values())
-        {
-            dFinal += pair.getLeft()[1];
         }
-        dFinal = dFinal / 472525;
-        System.out.println(dFinal);
-    }
+        DisplayQ.append(".\n");
 
-    public ArrayList<MutablePair<String, StringBuilder>> fnTreck(String sPath)
+        setChanged();
+        notifyObservers("SimpleQ returned");
+    }
+    public void fnRunFileQuery(String path) {
+        long startTime = System.currentTimeMillis();
+        fnRunArrQ(fnTreck(path));
+        long   endTime   = System.currentTimeMillis();
+        double totalTime = (endTime - startTime) / Math.pow(10, 3);
+        DisplayQ.append("Total processing time: "+ String.valueOf(totalTime)+"\n");
+        setChanged();
+        notifyObservers("FileQ end");
+
+    }
+    private void fnRunArrQ(ArrayList<MutablePair<String,StringBuilder>>Queries){
+        QtoSave=new StringBuilder();
+        DisplayQ=new StringBuilder();
+        for(int i=0;i<Queries.size();i++){
+            ArrayList<Map.Entry<String, Double>> ans=searcher.fnSearch(Queries.get(i).getRight(),false );
+            int retC=ans.size();
+            String docN;
+            String Qid=Queries.get(i).getLeft();
+            DisplayQ.append("Query id - "+Qid + " results:\n");
+            DisplayQ.append("" +"Number of relevent document return: "+ String.valueOf(retC) + "\n");
+            DisplayQ.append("Documents: ");
+            for(int j=0;j<retC;j++){
+                docN=ans.get(j).getKey();
+                DisplayQ.append(String.valueOf(docN)+", ");
+                if(j%5==0&&j!=0)
+                    DisplayQ.append("\n");
+                QtoSave.append(Qid+" 1 "+ String.valueOf(docN)+" 1 1.0 mt\n");
+
+            }
+            DisplayQ.append("#################################################\n");
+        }
+
+    }
+    private ArrayList<MutablePair<String, StringBuilder>> fnTreck(String sPath)
     {
         BufferedReader                                br              = null;
         ArrayList<MutablePair<String, StringBuilder>> arrayListResult = new ArrayList<>();
@@ -641,6 +680,56 @@ public class MyModel extends Observable
         }
         return arrayListResult;
     }
+
+    public void fnSaveQ(String pathToSave){
+        File file = new File(pathToSave);
+        if (!file.exists())
+        {
+            try
+            {
+                file.createNewFile();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        try
+        {
+            BufferedWriter                            bf    = new BufferedWriter(new FileWriter(file));
+            bf.write(QtoSave.toString());
+            bf.flush();
+            }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+/***********************************to be deleted*****************************/
+    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic() {
+        return indexer.getDictionary();
+    }
+
+    public HashMap<String, MutablePair<String, Long>> fnGetCache()
+    {
+        return indexer.getCache();
+    }
+
+    public void fnGetAvgDocsLength()
+    {
+        double dFinal = 0;
+        for (MutablePair<double[], String> pair : this.indexer.getHashMapDocsGrade().values())
+        {
+            dFinal += pair.getLeft()[1];
+        }
+        dFinal = dFinal / 472525;
+        System.out.println(dFinal);
+    }
+
+
+
 }
 
 

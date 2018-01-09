@@ -41,6 +41,7 @@ public class Searcher
         this.dictionary = dictionary;
         this.cache = cache;
         this.ranker = new Ranker(hashMapDocs, dictionary, cache);
+
     }
 
     //TODO: complete javadoc
@@ -52,13 +53,13 @@ public class Searcher
      * @param sQuery the query to search in the database
      * @return parsed words.
      */
-    public ArrayList<Map.Entry<String, Double>> fnSearch(StringBuilder sQuery)
+    public ArrayList<Map.Entry<String, Double>> fnSearch(StringBuilder sQuery,boolean bExtend)
     {
         MutablePair<ArrayList<Term>, int[]> pair           = parse.fnParseText1(sQuery, "");
         String[]                            result;
         String[]                            sQueryWords;
         ArrayList<String>                   arrayListQuery = new ArrayList<>();
-        if (bWikipedia)
+        if (bExtend)
         {
             String[] arrayWordsFromWikipedia = fnGetWordsFromWikipedia(sQuery);
             //TODO: continue this
@@ -380,6 +381,7 @@ public class Searcher
         try
         {
             this.randomAccessFile = new RandomAccessFile(posting, "r");
+            this.ranker.fnRandomAccessFileInitialize(sReadPosting);
         }
         catch (Exception e)
         {

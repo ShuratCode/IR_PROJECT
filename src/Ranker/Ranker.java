@@ -59,14 +59,17 @@ public class Ranker
             lPointer = this.dictionary.get(term).getRight();
             if(dictionary.containsKey(term)){
                 float termIDF=dictionary.get(term).getMiddle();
-                lPointer=cache.get(term).getRight();
                 if(cache.containsKey(term)){
+                    lPointer=cache.get(term).getRight();
                     sLine=cache.get(term).getLeft();
                     strings = sLine.split("!#");
 
                     for (int iIndex = 1, iLength = strings.length; iIndex < iLength; iIndex++)//compute docs in cache
                     {
                         String sDocTemp = strings[iIndex];
+                        if(sDocTemp.substring(0,1).equals("T")){
+                            System.out.println();
+                        }
                         double maxTFi=hashMapDocsGrades.get(sDocTemp).getLeft()[0];
                         iIndex++;
                         int Fi = Integer.parseInt(strings[iIndex]);
