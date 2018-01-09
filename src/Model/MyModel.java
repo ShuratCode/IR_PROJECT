@@ -406,9 +406,9 @@ public class MyModel extends Observable
     public void fnLoadObjects(String sPathForObjects)
     {
         this.indexer.setPathForObjects(sPathForObjects);
-        if (this.sPathForPosting.equals(""))
+        if (this.sPathForPosting.equals("\\Posting"))
         {
-            File file = new File(sPathForObjects + "cacheStemmed");
+            File file = new File(sPathForObjects + "\\cacheStemmed");
             if (file.exists())
             {
                 this.bToStem = true;
