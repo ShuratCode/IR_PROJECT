@@ -15,7 +15,7 @@ public class Ranker
     private HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary;
     private HashMap<String, MutablePair<String, Long>>             cache;
     private final double dAvgDocLength = 182.51711338024444;
-    private final double dK1Const      = 1.5;
+    private final double dK1Const      = 1.2;
     private final double dBConst       = 0.75;
 
     public Ranker(HashMap<String, MutablePair<double[], String>> hashMapDocsGrades, HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary, HashMap<String, MutablePair<String, Long>> cache)
@@ -48,10 +48,11 @@ public class Ranker
     }
 
     public ArrayList<Map.Entry<String, Double>> fnGetBestDocs(ArrayList<String> query, int iNumReturn){
-        HashMap<String,Double> rankList=new HashMap<>();
-        String   sLine;
-        String[] strings;
-        long     lPointer;
+        HashMap<String,Double>  rankList  =new HashMap<>();
+        HashMap<String, Double> rankList2 = new HashMap<>();
+        String                  sLine;
+        String[]                strings;
+        long                    lPointer;
         for(int i=0;i<query.size();i++){// loop for each word in q
             String term=query.get(i);
             if(!dictionary.containsKey(term))
@@ -74,10 +75,20 @@ public class Ranker
                         iIndex++;
                         int Fi = Integer.parseInt(strings[iIndex]);
                         if(rankList.containsKey(sDocTemp)){
+                            double dUp    = Fi * (dK1Const + 1);
+                            double dDown  = Fi + dK1Const * (1 - dBConst + dBConst * (this.hashMapDocsGrades.get(sDocTemp).getLeft()[1] / dAvgDocLength));
+                            double dGrade = termIDF * (dUp / dDown);
+                            //
                             rankList.put(sDocTemp,rankList.get(sDocTemp)+((((double)Fi)/maxTFi)*termIDF));
+                            rankList2.put(sDocTemp, rankList2.get(sDocTemp) + dGrade);
                         }
                         else{
-                            rankList.put(sDocTemp,((((double)Fi)/maxTFi)*termIDF));
+                            double dUp    = Fi * (dK1Const + 1);
+                            double dDown  = Fi + dK1Const * (1 - dBConst + dBConst * (this.hashMapDocsGrades.get(sDocTemp).getLeft()[1] / dAvgDocLength));
+                            double dGrade = termIDF * (dUp / dDown);
+                            //
+                            rankList.put(sDocTemp, ((((double) Fi) / maxTFi) * termIDF));
+                            rankList2.put(sDocTemp, dGrade);
                         }
                     }
                 }
@@ -92,10 +103,20 @@ public class Ranker
                         iIndex++;
                         int Fi = Integer.parseInt(strings[iIndex]);
                         if(rankList.containsKey(sDocTemp)){
-                            rankList.put(sDocTemp,rankList.get(sDocTemp)+((((double)Fi)/maxTFi)*termIDF));
+                            double dUp    = Fi * (dK1Const + 1);
+                            double dDown  = Fi + dK1Const * (1 - dBConst + dBConst * (this.hashMapDocsGrades.get(sDocTemp).getLeft()[1] / dAvgDocLength));
+                            double dGrade = termIDF * (dUp / dDown);
+                            //
+                            rankList.put(sDocTemp, rankList.get(sDocTemp) + ((((double) Fi) / maxTFi) * termIDF));
+                            rankList2.put(sDocTemp, rankList2.get(sDocTemp) + dGrade);
                         }
                         else{
-                            rankList.put(sDocTemp,((((double)Fi)/maxTFi)*termIDF));
+                            double dUp    = Fi * (dK1Const + 1);
+                            double dDown  = Fi + dK1Const * (1 - dBConst + dBConst * (this.hashMapDocsGrades.get(sDocTemp).getLeft()[1] / dAvgDocLength));
+                            double dGrade = termIDF * (dUp / dDown);
+                            //
+                            rankList.put(sDocTemp, ((((double) Fi) / maxTFi) * termIDF));
+                            rankList2.put(sDocTemp, dGrade);
                         }
                     }
 
@@ -104,14 +125,26 @@ public class Ranker
                 }
             }
         }
-        ArrayList<Map.Entry<String,Double>> ansRlist=new ArrayList<>(rankList.entrySet());
-        for(int i=0;i<ansRlist.size();i++){//normlize the cosim for each doc
-            String doc=ansRlist.get(i).getKey();
-            double docG=hashMapDocsGrades.get(doc).getLeft()[2];
-            double docW=ansRlist.get(i).getValue();
-            ansRlist.get(i).setValue(docW/(docG*Math.sqrt((double) query.size())));
+        ArrayList<Map.Entry<String, Double>> cosin = new ArrayList<>(rankList.entrySet());
+
+        for (int i = 0; i < cosin.size(); i++)
+        {//normlize the cosim for each doc
+            String doc  = cosin.get(i).getKey();
+            double docG =hashMapDocsGrades.get(doc).getLeft()[2];
+            double docW = cosin.get(i).getValue();
+            cosin.get(i).setValue(docW / (docG * Math.sqrt((double) query.size())));
         }
-        Collections.sort(ansRlist, new Comparator<Map.Entry<String, Double>>() {
+        ArrayList<Map.Entry<String, Double>> ans = new ArrayList<>(rankList.entrySet());
+        for (int j = 0, iSize = cosin.size(); j < iSize; j++)
+        {
+            String doc      = cosin.get(j).getKey();
+            double cos      = cosin.get(j).getValue();
+            double bm       = rankList2.get(doc);
+            double newVluae = 0.9 * bm + 0.1 * cos;
+            ans.get(j).setValue(newVluae);
+        }
+        Collections.sort(ans, new Comparator<Map.Entry<String, Double>>()
+        {
             @Override
             public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
                 if (o1.getValue() > o2.getValue()){
@@ -125,12 +158,13 @@ public class Ranker
                 }
             }
         });
-        if(ansRlist.size()>iNumReturn){
-            ArrayList<Map.Entry<String,Double>> ansRlist2=new ArrayList<>(ansRlist.subList(0,iNumReturn));
+        if (cosin.size() > iNumReturn)
+        {
+            ArrayList<Map.Entry<String, Double>> ansRlist2 = new ArrayList<>(ans.subList(0, iNumReturn));
             return ansRlist2;
         }
 
-        return ansRlist;
+        return cosin;
     }
 
     public void fnRandomAccessFileInitialize(String sReadPosting)

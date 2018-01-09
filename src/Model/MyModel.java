@@ -425,9 +425,9 @@ public class MyModel extends Observable
         this.indexer.fnReadDocsGrades(sPathForObjects);
         this.mDocInfo=indexer.getHashMapDocsGrade();
         this.searcher=new Searcher(bToStem,this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
-        HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\IBM_ADMIN\\IdeaProjects\\test1\\corpus\\stop_words.txt");
+        HashSet<String> stopWords = readFile.fnReadStopWords(sPathForObjects + "\\stop_words.txt");
         this.searcher.fnSetStopWords(stopWords);
-        fnSetPostingFileReader("C:\\Users\\IBM_ADMIN\\IdeaProjects\\Posting\\Non Stemmed\\ConstPost.txt");
+        fnSetPostingFileReader(sPathForObjects + "\\ConstPost.txt");
 
         setChanged();
         notifyObservers("Load objects end");
