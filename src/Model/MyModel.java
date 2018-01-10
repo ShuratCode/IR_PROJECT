@@ -410,20 +410,19 @@ public class MyModel extends Observable
     public void fnLoadObjects(String sPathForObjects)
     {
         this.indexer.setPathForObjects(sPathForObjects);
-        if (this.sPathForPosting.equals("\\Posting"))
+
+        File file = new File(sPathForObjects + "\\cacheStemmed");
+        if (file.exists())
         {
-            File file = new File(sPathForObjects + "\\cacheStemmed");
-            if (file.exists())
-            {
-                this.bToStem = true;
-                this.indexer.setbToStem(true);
-            }
-            else
-            {
-                this.bToStem = false;
-                this.indexer.setbToStem(false);
-            }
+            this.bToStem = true;
+            this.indexer.setbToStem(true);
         }
+        else
+        {
+            this.bToStem = false;
+            this.indexer.setbToStem(false);
+        }
+
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
         this.indexer.fnReadDocsGrades(sPathForObjects);
@@ -559,6 +558,11 @@ public class MyModel extends Observable
         DisplayQ = new StringBuilder();
         ArrayList<MutablePair<String, Double>> arrayListPairs = this.searcher.fnMostImportant(sDocName);
         String[]                               result         = new String[5];
+        if(arrayListPairs==null){
+            setChanged();
+            notifyObservers("Top 5 fail : doc or corpus not found");
+            return;
+        }
         for (int iIndex = 0, iSize = arrayListPairs.size(); iIndex < iSize && iIndex < 5; iIndex++)
         {
             MutablePair<String, Double> pair = arrayListPairs.get(iIndex);
@@ -754,9 +758,11 @@ public class MyModel extends Observable
         }
     }
 
-    /***********************************to be deleted*****************************/
-    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic()
-    {
+    public void fnResetQHistory(String sLastQSPath) {
+
+    }
+/***********************************to be deleted*****************************/
+    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic() {
         return indexer.getDictionary();
     }
 
@@ -794,6 +800,8 @@ public class MyModel extends Observable
         this.sRootPath = corpusP;
         searcher.sCorpusPath = corpusP;
     }
+
+
 }
 
 

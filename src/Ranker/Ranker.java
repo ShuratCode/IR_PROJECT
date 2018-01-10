@@ -77,11 +77,7 @@ public class Ranker
                     for (int iIndex = 1, iLength = strings.length; iIndex < iLength; iIndex++)//compute docs in cache
                     {
                         String sDocTemp = strings[iIndex];
-                        if (sDocTemp.substring(0, 1).equals("T"))
-                        {
-                            System.out.println();
-                        }
-                        double maxTFi = hashMapDocsGrades.get(sDocTemp).getLeft()[0];
+                        double maxTFi=hashMapDocsGrades.get(sDocTemp).getLeft()[0];
                         iIndex++;
                         int Fi = Integer.parseInt(strings[iIndex]);
                         if (rankList.containsKey(sDocTemp))

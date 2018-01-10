@@ -82,12 +82,17 @@ public class Searcher
                 if (bToStem)
                 {
                     String sWord = this.stemmer.stemTerm(term.getsName());
-                    arrayListQuery.add(sWord);
+                    for(int j=0;j<term.getiNumOfTimes();j++){
+                        arrayListQuery.add(sWord);
+                    }
+
                 }
                 else
                 {
                     String sWord = term.getsName();
-                    arrayListQuery.add(sWord);
+                    for(int j=0;j<term.getiNumOfTimes();j++){
+                        arrayListQuery.add(sWord);
+                    }
                 }
 
             }
@@ -291,6 +296,9 @@ public class Searcher
      */
     public ArrayList<MutablePair<String, Double>> fnMostImportant(String sDocName)
     {
+        if(!hashMapDocs.containsKey(sDocName)){
+            return null;
+        }
         String sFileName = this.hashMapDocs.get(sDocName).getRight();
         String sDocPath  = this.sCorpusPath + "\\" + sFileName + "\\" + sFileName;
         File   file      = new File(sDocPath);

@@ -26,10 +26,13 @@ public class Controller implements Observer
     @FXML
     private CheckBox cStemer, cbExtendQ, cbTop5S;
     @FXML
-    private Label    DBInfo;
-    @FXML
-    private TextArea tAreaDisplay;
-    private String   sDiPath, sChPath;
+    private Label DBInfo;
+
+    private String sLastQSPath;
+
+    public Stage stage;
+
+    private String sDiPath,sChPath;
 
 
     public Controller()
@@ -127,9 +130,9 @@ public class Controller implements Observer
         {
             Model = new MyModel("", false, "", 10);
             Model.addObserver(this);
-            bStartIndexing.setDisable(true);
-            bLoadDC.setDisable(true);
-            new Thread(() -> Model.fnLoadObjects(selectedDirectory.getPath())).start();
+            fnFreezWindow();
+            DBInfo.setText("Status: processing\n please be patient\n");
+            new Thread(()->Model.fnLoadObjects(selectedDirectory.getPath())).start();
 
         }
     }
@@ -193,34 +196,51 @@ public class Controller implements Observer
         {
             AlertBox a = new AlertBox();
             a.display("Parameters Error", "Please enter a valid query");
+            return;
         }
-
-        if (cbTop5S.isSelected())
-        {
+        if(cbTop5S.isSelected()){
             DirectoryChooser chooser = new DirectoryChooser();
             chooser.setTitle("Select Corpus path");
             File selectedDirectory = chooser.showDialog(stage);
+            if(selectedDirectory.getPath().equals("")){
+                AlertBox a = new AlertBox();
+                a.display("Parameters Error", "Please enter a valid corpus path");
+                return;
+            }
             Model.setCorpusP(selectedDirectory.getPath());
-            new Thread(() ->
-            {
+            fnFreezWindow();
+            DBInfo.setText("Status: processing\n please be patient\n");
+            new Thread(()->{
                 Model.fnMostImportant(tQuery.getText());
+
             }).start();
-
         }
-        else
-        {
-            new Thread(() -> Model.fnRunSimpleQuery(tQuery.getText(), cbExtendQ.isSelected())).start();
+        else {
+            if(tQuery.getText().equals("")){
+                AlertBox a = new AlertBox();
+                a.display("Parameters Error", "Please enter a valid query");
+                return;
+            }
+            new Thread(()->Model.fnRunSimpleQuery(tQuery.getText(),cbExtendQ.isSelected())).start();
+            fnFreezWindow();
+            DBInfo.setText("Status: processing\n please be patient\n");
         }
-
-
     }
+
 
     public void saveQ()
     {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Select Root path");
         File selectedDirectory = chooser.showDialog(stage);
-        Model.fnSaveQ(selectedDirectory.getPath() + "\\" + tQueryName.getText());
+        if(selectedDirectory.getPath().equals("")){
+            AlertBox a = new AlertBox();
+            a.display("Parameters Error", "Please enter a valid directory to save" );
+            return;
+        }
+        Model.fnSaveQ(selectedDirectory.getPath()+"\\"+tQueryName.getText());
+        sLastQSPath=selectedDirectory.getPath()+"\\"+tQueryName.getText();
+        DBInfo.setText("Status: Save success\n ");
     }
 
     public void fnRunFileQ()
@@ -228,8 +248,14 @@ public class Controller implements Observer
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select query file");
         File selectedFile = fileChooser.showOpenDialog(stage);
-        new Thread(() ->
-        {
+        if(selectedFile.getPath().equals("")){
+            AlertBox a = new AlertBox();
+            a.display("Parameters Error", "Please enter a valid query file");
+            return;
+        }
+        fnFreezWindow();
+        DBInfo.setText("Status: processing\n please be patient\n");
+        new Thread(()->{
             Model.fnRunFileQuery(selectedFile.getPath());
         }).start();
     }
@@ -244,33 +270,43 @@ public class Controller implements Observer
         cbTop5S.setSelected(false);
     }
 
-    /*
-        public void fnResetQH(){
-            Model.fnResetQHistory();
-        }*/
+    public void fnResetQH(){
+        Model.fnResetQHistory(sLastQSPath);
+    }
+
+    private void fnFreezWindow(){
+    bStartIndexing.setDisable(true);
+    bSaveDC.setDisable(true);
+    bLoadDC.setDisable(true);
+    bSelectRoot.setDisable(true);
+    bSelectDest.setDisable(true);
+    bShowCache.setDisable(true);
+    bShowDic.setDisable(true);
+    bReset.setDisable(true);
+    bResetQH.setDisable(true);
+    bSaveQ.setDisable(true);
+    bRun1Q.setDisable(true);
+    bRunFileQ.setDisable(true);
+}
+
     @Override
-    public void update(Observable o, Object arg)
-    {
-        String s = (String) arg;
-        switch (s)
-        {
-            case "index end":
-            {
-                Platform.runLater(() ->
-                {
-                    AlertBox a = new AlertBox();
-                    a.display("Indexing Finish", Model.buildBDInfo);
-                    DBInfo.setText(Model.buildBDInfo);
-                    bStartIndexing.setDisable(false);
-                    bReset.setDisable(false);
-                    bSaveDC.setDisable(false);
-                    bLoadDC.setDisable(false);
-                    bSelectRoot.setDisable(false);
-                    bSelectDest.setDisable(false);
-                    bShowCache.setDisable(false);
-                    bShowDic.setDisable(false);
-                    isLoad = true;
-                });
+    public void update(Observable o, Object arg) {
+        String s=(String)arg;
+        switch (s){
+            case "index end" : {
+                Platform.runLater(()->{AlertBox a = new AlertBox();
+                            a.display("Indexing Finish", Model.buildBDInfo);
+                            DBInfo.setText(Model.buildBDInfo);
+                            bStartIndexing.setDisable(false);
+                            bReset.setDisable(false);
+                            bSaveDC.setDisable(false);
+                            bLoadDC.setDisable(false);
+                            bSelectRoot.setDisable(false);
+                            bSelectDest.setDisable(false);
+                            bShowCache.setDisable(false);
+                            bShowDic.setDisable(false);
+
+                            isLoad = true;});
 
                 break;
             }
@@ -285,6 +321,15 @@ public class Controller implements Observer
                     DisplayQ d = new DisplayQ();
                     d.display("Query results", Model.DisplayQ.toString());
                     bSaveQ.setDisable(false);
+                    bRun1Q.setDisable(false);
+                    bRunFileQ.setDisable(false);
+                    bResetQH.setDisable(false);
+                    bLoadDC.setDisable(false);
+                    bSaveDC.setDisable(false);
+                    bShowCache.setDisable(false);
+                    bShowDic.setDisable(false);
+                    DBInfo.setText("Status: Query returned successfully\n ");
+
                 });
                 break;
             }
@@ -301,7 +346,12 @@ public class Controller implements Observer
                     bRunFileQ.setDisable(false);
                     cbExtendQ.setDisable(false);
                     cbTop5S.setDisable(false);
-                    isLoad = true;
+                    bReset.setDisable(false);
+                    bStartIndexing.setDisable(false);
+                    bSelectRoot.setDisable(false);
+                    bSelectDest.setDisable(false);
+                    isLoad=true;
+                    DBInfo.setText("Status: Load successfully \n ");
                 });
                 break;
             }
@@ -312,6 +362,14 @@ public class Controller implements Observer
                     DisplayQ d = new DisplayQ();
                     d.display("Query File results", Model.DisplayQ.toString());
                     bSaveQ.setDisable(false);
+                    bRun1Q.setDisable(false);
+                    bRunFileQ.setDisable(false);
+                    bResetQH.setDisable(false);
+                    bLoadDC.setDisable(false);
+                    bSaveDC.setDisable(false);
+                    bShowCache.setDisable(false);
+                    bShowDic.setDisable(false);
+                    DBInfo.setText("Status: Query returned successfully \n ");
                 });
                 break;
             }
@@ -321,6 +379,29 @@ public class Controller implements Observer
                 {
                     DisplayQ d = new DisplayQ();
                     d.display("Top 5 Lines", Model.DisplayQ.toString());
+                    bSaveQ.setDisable(false);
+                    bRun1Q.setDisable(false);
+                    bRunFileQ.setDisable(false);
+                    bResetQH.setDisable(false);
+                    bLoadDC.setDisable(false);
+                    bSaveDC.setDisable(false);
+                    bShowCache.setDisable(false);
+                    bShowDic.setDisable(false);
+                    DBInfo.setText("Status: Query returned successfully \n ");
+                });
+                break;
+            }
+            case "Top 5 fail : doc or corpus not found":{
+                Platform.runLater(()->{
+                    AlertBox a = new AlertBox();
+                    a.display("Input Error", "You have entered wrong parameters.\n Please check again document number & corpus path.\n");
+                    bRun1Q.setDisable(false);
+                    bRunFileQ.setDisable(false);
+                    bResetQH.setDisable(false);
+                    bLoadDC.setDisable(false);
+                    bSaveDC.setDisable(false);
+                    bShowCache.setDisable(false);
+                    bShowDic.setDisable(false);
                 });
                 break;
             }
