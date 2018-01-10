@@ -13,7 +13,7 @@ public class Main extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader();
         Parent root = fxmlLoader.load(getClass().getResource("View.fxml").openStream());
         primaryStage.setTitle("IR Engine");
-        primaryStage.setScene(new Scene(root, 500, 400));
+        primaryStage.setScene(new Scene(root, 600, 400));
         /*******************/
         Controller C = fxmlLoader.getController();
         C.stage=primaryStage;

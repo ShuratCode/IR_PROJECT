@@ -23,7 +23,7 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <GridPane style="-fx-background-color: FFFFCC;">
+                <GridPane style="-fx-background-color: CCE5FF;">
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="143.0" minWidth="10.0" prefWidth="113.0" />
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="184.0" minWidth="10.0" prefWidth="184.0" />
@@ -42,7 +42,7 @@
                         <Button id="bStartIndexing" fx:id="bStartIndexing" alignment="CENTER" mnemonicParsing="false" onAction="#startIndexing" text="Start Indexing" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                     </children>
                 </GridPane>
-                <GridPane style="-fx-background-color: FFFFCC;" GridPane.columnIndex="1">
+                <GridPane style="-fx-background-color: CCE5FF;" GridPane.columnIndex="1">
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -58,7 +58,7 @@
                         <Button fx:id="bReset" mnemonicParsing="false" onAction="#reset" text="Reset Engine" GridPane.rowIndex="2" />
                     </children>
                 </GridPane>
-                <GridPane alignment="CENTER" style="-fx-background-color: FFFFCC;" GridPane.rowIndex="1">
+                <GridPane alignment="CENTER" style="-fx-background-color: CCE5FF;" GridPane.rowIndex="1">
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="185.0" />
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="144.0" minWidth="10.0" prefWidth="113.0" />
@@ -75,7 +75,7 @@
                         <Button fx:id="bShowDic" mnemonicParsing="false" onAction="#openDi" prefHeight="25.0" prefWidth="114.0" text="Show Dictionary" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                     </children>
                 </GridPane>
-                <Label fx:id="DBInfo" alignment="CENTER" prefHeight="130.0" prefWidth="295.0" style="-fx-background-color: FFFFCC;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <Label fx:id="DBInfo" alignment="CENTER" prefHeight="130.0" prefWidth="295.0" style="-fx-background-color: CCE5FF;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <GridPane style="-fx-background-color: E5FFCC;" GridPane.rowIndex="2">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="144.0" minWidth="10.0" prefWidth="105.0" />
