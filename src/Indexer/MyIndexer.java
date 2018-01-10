@@ -14,6 +14,9 @@ import java.util.*;
  */
 public class MyIndexer
 {
+    /***********************************************************************************************
+     *                                      Fields                                                 *
+     ***********************************************************************************************/
     private HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary; // Represent the dictionary, key is the term and the triple is: left = num of files the terms are in, middle is idf score, long is pointer to posting file
     private int                                                    iNumOfPostingFiles; // Count the number of temp posting files we create
     private TreeMap<String, StringBuilder>                         hashMapTempStrings; // will use to save the line of each term to be to be written to a posting file
@@ -24,6 +27,9 @@ public class MyIndexer
     private HashMap<String, MutablePair<double[], String>> hashmapDocs;
 
 
+    /***********************************************************************************************
+     *                                      Constructors                                           *
+     ***********************************************************************************************/
     /**
      * Creating new Indexer.
      * Also Create new directory With the name Posting
@@ -41,6 +47,9 @@ public class MyIndexer
         this.hashmapDocs = new HashMap<>();
     }
 
+    /***********************************************************************************************
+     *                                      Setters                                                *
+     ***********************************************************************************************/
     /**
      * Set the total number of docs we parse
      *
@@ -51,6 +60,29 @@ public class MyIndexer
         this.iTotalDocs = iTotalDocs;
     }
 
+    /**
+     * Set new value to bToStem
+     *
+     * @param bToStem true to use stemmer, else false
+     */
+    public void setbToStem(boolean bToStem)
+    {
+        this.bToStem = bToStem;
+    }
+
+    /**
+     * Set the path for saving the cache and dictionary
+     *
+     * @param pathForObjects directory. should be existed.
+     */
+    public void setPathForObjects(String pathForObjects)
+    {
+        this.sPathForObject = pathForObjects;
+    }
+
+    /***********************************************************************************************
+     *                                      Functions                                              *
+     ***********************************************************************************************/
     /**
      * We will update the dictionary and will create new posting file.
      *
@@ -979,16 +1011,6 @@ public class MyIndexer
     }
 
     /**
-     * Get the dictionary now save in the memory
-     *
-     * @return dictionary
-     */
-    public HashMap<String, MutableTriple<Integer[], Float, Long>> getDictionary()
-    {
-        return this.dictionary;
-    }
-
-    /**
      * Calculate the cache file size in bytes
      *
      * @return -1 if the cache file is not existed, else the value in long
@@ -1058,16 +1080,6 @@ public class MyIndexer
     }
 
     /**
-     * Set new value to bToStem
-     *
-     * @param bToStem true to use stemmer, else false
-     */
-    public void setbToStem(boolean bToStem)
-    {
-        this.bToStem = bToStem;
-    }
-
-    /**
      * Writes the dictionary as a text file.
      *
      * @param bf Buffered Writer we use to write with. should be initialize to the file we want to write to.
@@ -1105,16 +1117,6 @@ public class MyIndexer
     }
 
     /**
-     * Set the path for saving the cache and dictionary
-     *
-     * @param pathForObjects directory. should be existed.
-     */
-    public void setPathForObjects(String pathForObjects)
-    {
-        this.sPathForObject = pathForObjects;
-    }
-
-    /**
      * Build a string for path to save the dictionary and cache.
      *
      * @return full path to the file of the dictionary (first cell in the array), full path for the cache file
@@ -1135,17 +1137,6 @@ public class MyIndexer
         }
 
         return new String[]{sPathForDic, sPathForCache};
-    }
-
-    /**
-     * Get the idf grade of a term in the corpus.
-     *
-     * @param sTerm the term which we want the idf grade for.
-     * @return idf grade of the term
-     */
-    public float fnGetIDFGrade(String sTerm)
-    {
-        return this.dictionary.get(sTerm).getMiddle();
     }
 
     /**
@@ -1174,11 +1165,7 @@ public class MyIndexer
                 inputStream = new ObjectInputStream(new FileInputStream(source));
                 this.hashmapDocs = (HashMap<String, MutablePair<double[], String>>) inputStream.readObject();
             }
-            catch (FileNotFoundException | ClassNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e)
+            catch (ClassNotFoundException | IOException e)
             {
                 e.printStackTrace();
             }
@@ -1200,17 +1187,6 @@ public class MyIndexer
     }
 
     /**
-     * return the hash map of docs data. first cell in the array is maxTF, second is doc length, third is the grade.
-     * The string in the file name in the corpus
-     *
-     * @return hash map of docs data
-     */
-    public HashMap<String, MutablePair<double[], String>> getHashMapDocsGrade()
-    {
-        return hashmapDocs;
-    }
-
-    /**
      * Add new doc to the hash map of the docs data
      *
      * @param sDocName the name of the document
@@ -1221,6 +1197,42 @@ public class MyIndexer
     {
         double[] d = {ints[0], ints[1], 0};
         this.hashmapDocs.put(sDocName, new MutablePair<>(d, sDocFile));
+    }
+
+    /***********************************************************************************************
+     *                                      Getters                                                *
+     ***********************************************************************************************/
+
+    /**
+     * Get the dictionary now save in the memory
+     *
+     * @return dictionary
+     */
+    public HashMap<String, MutableTriple<Integer[], Float, Long>> getDictionary()
+    {
+        return this.dictionary;
+    }
+
+    /**
+     * Get the idf grade of a term in the corpus.
+     *
+     * @param sTerm the term which we want the idf grade for.
+     * @return idf grade of the term
+     */
+    public float fnGetIDFGrade(String sTerm)
+    {
+        return this.dictionary.get(sTerm).getMiddle();
+    }
+
+    /**
+     * return the hash map of docs data. first cell in the array is maxTF, second is doc length, third is the grade.
+     * The string in the file name in the corpus
+     *
+     * @return hash map of docs data
+     */
+    public HashMap<String, MutablePair<double[], String>> getHashMapDocsGrade()
+    {
+        return hashmapDocs;
     }
 
     /******************************************need to delet*********************************/

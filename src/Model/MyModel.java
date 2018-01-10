@@ -5,7 +5,6 @@ import Documnet.Document;
 import Indexer.MyIndexer;
 import Parse.Parse;
 import Parse.Term;
-import Ranker.Ranker;
 import ReadFile.ReadFile;
 import Searcher.Searcher;
 import Stemmer.PorterStemmer;
@@ -23,10 +22,12 @@ import java.util.*;
  */
 public class MyModel extends Observable
 {
-
+    /***********************************************************************************************
+     *                                      Fields                                                 *
+     ***********************************************************************************************/
     public String                                         buildBDInfo;
     public HashMap<String, MutablePair<double[], String>> mDocInfo;
-    public StringBuilder DisplayQ, QtoSave;
+    public StringBuilder                                  DisplayQ, QtoSave;
     private ReadFile  readFile;
     private Parse     parse;
     private MyIndexer indexer;
@@ -35,9 +36,12 @@ public class MyModel extends Observable
     private PorterStemmer     stemmer;
     private boolean           bToStem;
     private int               iNumOfDocs, iNumOfParts;
-    private Ranker   ranker;
     private Searcher searcher;
 
+
+    /***********************************************************************************************
+     *                                      Constructors                                           *
+     ***********************************************************************************************/
     /**
      * Constructor. will create a new folder name Posting in the path to keep all the files
      *
@@ -60,7 +64,6 @@ public class MyModel extends Observable
         this.mDocInfo = new HashMap<>();
         this.iNumOfDocs = 0;
         this.iNumOfParts = iNumOfParts;
-        this.ranker = null;
         this.searcher = null;
 
     }
@@ -364,6 +367,9 @@ public class MyModel extends Observable
         return pairs;
     }
 
+    /**
+     * Write the cache to file
+     */
     private void fnWriteCahce()
     {
         File file = new File("Resources\\Cache");
@@ -421,8 +427,8 @@ public class MyModel extends Observable
         this.indexer.fnReadCache(sPathForObjects);
         this.indexer.fnReadDictionary(sPathForObjects);
         this.indexer.fnReadDocsGrades(sPathForObjects);
-        this.mDocInfo=indexer.getHashMapDocsGrade();
-        this.searcher=new Searcher(bToStem,this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
+        this.mDocInfo = indexer.getHashMapDocsGrade();
+        this.searcher = new Searcher(bToStem, this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
         HashSet<String> stopWords = readFile.fnReadStopWords(sPathForObjects + "\\stop_words.txt");
         this.searcher.fnSetStopWords(stopWords);
         fnSetPostingFileReader(sPathForObjects + "\\ConstPost.txt");
@@ -430,7 +436,6 @@ public class MyModel extends Observable
         setChanged();
         notifyObservers("Load objects end");
     }
-
 
     /**
      * Save the cache in text file under the Resources folder for show on screen.
@@ -528,9 +533,13 @@ public class MyModel extends Observable
         }
     }
 
+    /**
+     * Initialize random access file in the searcher to read the posting file
+     *
+     * @param sReadPosting path to the posting file
+     */
     public void fnSetPostingFileReader(String sReadPosting)
     {
-        //this.ranker.fnRandomAccessFileInitialize(sReadPosting);
         if (this.searcher == null)
         {
             this.searcher = new Searcher(bToStem, this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
@@ -540,11 +549,14 @@ public class MyModel extends Observable
         this.searcher.fnInitializeReader(sReadPosting);
     }
 
-    //todo : add all the new funcs
-    //TODO: complete this.
+    /**
+     * Find 5 most important sentences in a specific document in the corpus
+     *
+     * @param sDocName document name
+     */
     public void fnMostImportant(String sDocName)
     {
-        DisplayQ=new StringBuilder();
+        DisplayQ = new StringBuilder();
         ArrayList<MutablePair<String, Double>> arrayListPairs = this.searcher.fnMostImportant(sDocName);
         String[]                               result         = new String[5];
         for (int iIndex = 0, iSize = arrayListPairs.size(); iIndex < iSize && iIndex < 5; iIndex++)
@@ -552,31 +564,42 @@ public class MyModel extends Observable
             MutablePair<String, Double> pair = arrayListPairs.get(iIndex);
             result[iIndex] = pair.getLeft();
             //*/
-            DisplayQ.append("{Grade:" +(5-iIndex)+"}"+arrayListPairs.get(iIndex).getLeft()+"\n");
+            DisplayQ.append("{Grade:").append(5 - iIndex).append("}").append(arrayListPairs.get(iIndex).getLeft()).append("\n");
 
         }
         setChanged();
         notifyObservers("Top 5 end");
     }
 
-    public void fnRunSimpleQuery(String Query , boolean extend){
+    /**
+     * Run a simple and single query. Can be extended by wikipedia page, but at that case the query needed to be
+     * single word.
+     *
+     * @param Query  the query to search for
+     * @param extend should we look at wikipedia to improve the query
+     */
+    public void fnRunSimpleQuery(String Query, boolean extend)
+    {
 
-        long startTime = System.currentTimeMillis();
-        ArrayList<Map.Entry<String, Double>> ans=searcher.fnSearch(new StringBuilder(Query),extend );
-        int retC=ans.size();
-        String docN;
-        long   endTime   = System.currentTimeMillis();
-        double totalTime = (endTime - startTime) / Math.pow(10, 3);
-        QtoSave=new StringBuilder();
-        DisplayQ=new StringBuilder("Number of relevent document return: "+ String.valueOf(retC) + "\n");
-        DisplayQ.append("Processing time: "+ String.valueOf(totalTime)+"\n");
+        long                                 startTime = System.currentTimeMillis();
+        ArrayList<Map.Entry<String, Double>> ans       = searcher.fnSearch(new StringBuilder(Query), extend);
+        int                                  retC      = ans.size();
+        String                               docN;
+        long                                 endTime   = System.currentTimeMillis();
+        double                               totalTime = (endTime - startTime) / Math.pow(10, 3);
+        QtoSave = new StringBuilder();
+        DisplayQ = new StringBuilder("Number of relevent document return: " + String.valueOf(retC) + "\n");
+        DisplayQ.append("Processing time: ").append(String.valueOf(totalTime)).append("\n");
         DisplayQ.append("Documents: ");
-        for(int i=0;i<retC;i++){
-            docN=ans.get(i).getKey();
-            DisplayQ.append(String.valueOf(docN)+", ");
-            if(i%5==0&&i!=0)
+        for (int i = 0; i < retC; i++)
+        {
+            docN = ans.get(i).getKey();
+            DisplayQ.append(String.valueOf(docN)).append(", ");
+            if (i % 5 == 0 && i != 0)
+            {
                 DisplayQ.append("\n");
-            QtoSave.append("1 1 "+ String.valueOf(docN)+" 1 1.0 mt\n");
+            }
+            QtoSave.append("1 1 ").append(String.valueOf(docN)).append(" 1 1.0 mt\n");
 
         }
         DisplayQ.append(".\n");
@@ -584,39 +607,59 @@ public class MyModel extends Observable
         setChanged();
         notifyObservers("SimpleQ returned");
     }
-    public void fnRunFileQuery(String path) {
+
+    /**
+     * Search number of queries. The file needed to be at treceval format.
+     *
+     * @param path path to the file
+     */
+    public void fnRunFileQuery(String path)
+    {
         long startTime = System.currentTimeMillis();
         fnRunArrQ(fnTreck(path));
         long   endTime   = System.currentTimeMillis();
         double totalTime = (endTime - startTime) / Math.pow(10, 3);
-        DisplayQ.append("Total processing time: "+ String.valueOf(totalTime)+"\n");
+        DisplayQ.append("Total processing time: ").append(String.valueOf(totalTime)).append("\n");
         setChanged();
         notifyObservers("FileQ end");
 
     }
-    private void fnRunArrQ(ArrayList<MutablePair<String,StringBuilder>>Queries){
-        QtoSave=new StringBuilder();
-        DisplayQ=new StringBuilder();
-        for(int i=0;i<Queries.size();i++){
-            ArrayList<Map.Entry<String, Double>> ans=searcher.fnSearch(Queries.get(i).getRight(),false );
-            int retC=ans.size();
-            String docN;
-            String Qid=Queries.get(i).getLeft();
-            DisplayQ.append("Query id - "+Qid + " results:\n");
-            DisplayQ.append("" +"Number of relevent document return: "+ String.valueOf(retC) + "\n");
+
+    private void fnRunArrQ(ArrayList<MutablePair<String, StringBuilder>> Queries)
+    {
+        QtoSave = new StringBuilder();
+        DisplayQ = new StringBuilder();
+        for (int i = 0; i < Queries.size(); i++)
+        {
+            ArrayList<Map.Entry<String, Double>> ans  = searcher.fnSearch(Queries.get(i).getRight(), false);
+            int                                  retC = ans.size();
+            String                               docN;
+            String                               Qid  = Queries.get(i).getLeft();
+            DisplayQ.append("Query id - ").append(Qid).append(" results:\n");
+            DisplayQ.append("" + "Number of relevent document return: ").append(String.valueOf(retC)).append("\n");
             DisplayQ.append("Documents: ");
-            for(int j=0;j<retC;j++){
-                docN=ans.get(j).getKey();
-                DisplayQ.append(String.valueOf(docN)+", ");
-                if(j%5==0&&j!=0)
+            for (int j = 0; j < retC; j++)
+            {
+                docN = ans.get(j).getKey();
+                DisplayQ.append(String.valueOf(docN)).append(", ");
+                if (j % 5 == 0 && j != 0)
+                {
                     DisplayQ.append("\n");
-                QtoSave.append(Qid+" 1 "+ String.valueOf(docN)+" 1 1.0 mt\n");
+                }
+                QtoSave.append(Qid).append(" 1 ").append(String.valueOf(docN)).append(" 1 1.0 mt\n");
 
             }
             DisplayQ.append("#################################################\n");
         }
 
     }
+
+    /**
+     * Parse the query file from treceval format to queries we can search.
+     *
+     * @param sPath path to the file we want to parse
+     * @return list of paris: left is the query id in string, the right is the query itself
+     */
     private ArrayList<MutablePair<String, StringBuilder>> fnTreck(String sPath)
     {
         BufferedReader                                br              = null;
@@ -631,6 +674,7 @@ public class MyModel extends Observable
                 String sLine;
                 while (null != (sLine = br.readLine()))
                 {
+
                     if (sLine.contains("<num>"))
                     {
                         String[] strings = sLine.split(" ");
@@ -678,7 +722,13 @@ public class MyModel extends Observable
         return arrayListResult;
     }
 
-    public void fnSaveQ(String pathToSave){
+    /**
+     * Save the result of the query in a file.
+     *
+     * @param pathToSave where to save the query
+     */
+    public void fnSaveQ(String pathToSave)
+    {
         File file = new File(pathToSave);
         if (!file.exists())
         {
@@ -694,26 +744,35 @@ public class MyModel extends Observable
 
         try
         {
-            BufferedWriter                            bf    = new BufferedWriter(new FileWriter(file));
+            BufferedWriter bf = new BufferedWriter(new FileWriter(file));
             bf.write(QtoSave.toString());
             bf.flush();
-            }
+        }
         catch (IOException e)
         {
             e.printStackTrace();
         }
     }
 
-/***********************************to be deleted*****************************/
-    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic() {
+    /***********************************to be deleted*****************************/
+    public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic()
+    {
         return indexer.getDictionary();
     }
 
+    /**
+     * return the cache
+     *
+     * @return cache
+     */
     public HashMap<String, MutablePair<String, Long>> fnGetCache()
     {
         return indexer.getCache();
     }
 
+    /**
+     * Calculate the average document length
+     */
     public void fnGetAvgDocsLength()
     {
         double dFinal = 0;
@@ -725,10 +784,15 @@ public class MyModel extends Observable
         System.out.println(dFinal);
     }
 
-
-    public void setCorpusP(String corpusP) {
+    /**
+     * Set the corpus path.
+     *
+     * @param corpusP path to the corpus
+     */
+    public void setCorpusP(String corpusP)
+    {
         this.sRootPath = corpusP;
-        searcher.sCorpusPath=corpusP;
+        searcher.sCorpusPath = corpusP;
     }
 }
 

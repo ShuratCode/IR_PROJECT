@@ -16,7 +16,7 @@ import java.util.*;
 
 public class Searcher
 {
-    public String  sCorpusPath;
+    public  String  sCorpusPath;
     private Parse   parse;
     private boolean bWikipedia, bToStem;
     private PorterStemmer                                          stemmer;
@@ -44,7 +44,6 @@ public class Searcher
 
     }
 
-    //TODO: complete javadoc
 
     /**
      * Will get query and parse it to separate words.
@@ -53,7 +52,7 @@ public class Searcher
      * @param sQuery the query to search in the database
      * @return parsed words.
      */
-    public ArrayList<Map.Entry<String, Double>> fnSearch(StringBuilder sQuery,boolean bExtend)
+    public ArrayList<Map.Entry<String, Double>> fnSearch(StringBuilder sQuery, boolean bExtend)
     {
         MutablePair<ArrayList<Term>, int[]> pair           = parse.fnParseText1(sQuery, "");
         String[]                            result;
@@ -98,6 +97,13 @@ public class Searcher
 
     }
 
+    /**
+     * Get another words from wikipedia page to improve the query. will search in wikipedia for relevant article and
+     * will parse it and choose the 5 most important
+     *
+     * @param sQuery the query to improve
+     * @return 5 words to add to the query
+     */
     public String[] fnGetWordsFromWikipedia(StringBuilder sQuery)
     {
 
@@ -134,13 +140,22 @@ public class Searcher
 
     }
 
+    /**
+     * set the boolean of the class to check if we need
+     *
+     * @param bWikipedia true if we want to search in wikipedia, false if not.
+     */
     public void setbWikipedia(boolean bWikipedia)
     {
         this.bWikipedia = bWikipedia;
     }
 
-    //TODO: get query and parse it. return query words.
-
+    /**
+     * Count the words in the text.
+     *
+     * @param text the text to count the words
+     * @return list of sorted words by the tf in the text. the maximum at the top
+     */
     private ArrayList<String> countWords(String text)
     {
         try
@@ -210,22 +225,70 @@ public class Searcher
 
     }
 
+    /**
+     * Change the word many form to single form if we had it in the list.
+     *
+     * @param word the word to change
+     * @return the new form of the word
+     */
     private String fnGetNewForm(String word)
     {
         switch (word)
         {
             case "humans":
                 return "human";
+            case "years":
+                return "year";
+            case "governments":
+                return "government";
+            case "groups":
+                return "group";
+            case "times":
+                return "time";
+            case "peoples":
+                return "people";
+            case "states":
+                return "state";
+            case "ends":
+                return "end";
+            case "cents":
+                return "cent";
+            case "parts":
+                return "part";
+            case "shares":
+                return "share";
+            case "texts":
+                return "text";
+            case "reports":
+                return "report";
+            case "ministers":
+                return "minister";
+            case "companies":
+                return "company";
+            case "presidents":
+                return "president";
+
         }
         return word;
     }
 
+    /**
+     * Get a stop words set and save it in this class and in the parser
+     *
+     * @param stopWords Hash set of stop words. can't be null
+     */
     public void fnSetStopWords(HashSet<String> stopWords)
     {
         this.stopWords = stopWords;
         this.parse.setHashSetStopWords(stopWords);
     }
 
+    /**
+     * Find the most important sentences in a specific doc.
+     *
+     * @param sDocName the doc we want to get the sentences for
+     * @return list of sorted pairs, left is the sentence, the right is the sentence grade
+     */
     public ArrayList<MutablePair<String, Double>> fnMostImportant(String sDocName)
     {
         String sFileName = this.hashMapDocs.get(sDocName).getRight();
@@ -252,6 +315,14 @@ public class Searcher
         return null;
     }
 
+    /**
+     * Calculate grade for each sentence. the grade is sum of all the words TF/MaxTF. stop words and words we don't have
+     * in the dictionary get the grade 0
+     *
+     * @param sLines   list of sentences to calculate grade for.
+     * @param sDocName the document we calculate the grades for.
+     * @return list of pairs with sentence and grade
+     */
     private ArrayList<MutablePair<String, Double>> fnGetLinesGrades(ArrayList<String> sLines, String sDocName)
     {
         ArrayList<MutablePair<String, Double>> result = new ArrayList<>();
@@ -279,6 +350,12 @@ public class Searcher
         return result;
     }
 
+    /**
+     * Find the frequency of term in a specific document by reading the posting file.
+     * @param sWord the term to find the tf for.
+     * @param sDocName the document we want the tf in.
+     * @return tf of the term in the document. 0 if not found
+     */
     private int fnGetTF(String sWord, String sDocName)
     {
         MutableTriple<Integer[], Float, Long> triple = this.dictionary.get(sWord);
@@ -335,6 +412,12 @@ public class Searcher
         return 0;
     }
 
+    /**
+     * Find the current document to get the tf for from posting line
+     * @param strings string array of documents names and tfs
+     * @param sDocName the specific document to look for
+     * @return the correct tf. 0 if not found
+     */
     private int fnGetTFFRomLine(String[] strings, String sDocName)
     {
         for (int iIndex = 1, iLength = strings.length; iIndex < iLength; iIndex++)
@@ -351,6 +434,12 @@ public class Searcher
         return 0;
     }
 
+    /**
+     * Return Document object that is the representation of the document name from a list of document
+     * @param docs list of documents objects
+     * @param sDocName the specific document name we need
+     * @return the document object
+     */
     private Documnet.Document fnGetCorrectDoc(ArrayList<Documnet.Document> docs, String sDocName)
     {
 
@@ -375,6 +464,10 @@ public class Searcher
         return null;
     }
 
+    /**
+     * Initialize the random access file object to read the posting file.
+     * @param sReadPosting path to the posting file
+     */
     public void fnInitializeReader(String sReadPosting)
     {
         File posting = new File(sReadPosting);

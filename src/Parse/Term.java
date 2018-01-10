@@ -29,7 +29,6 @@ public class Term implements Comparable<Term>
     }
 
     /**
-     *
      * @param sName set a new name to tne term
      */
     public void setsName(String sName)
@@ -46,7 +45,6 @@ public class Term implements Comparable<Term>
     }
 
     /**
-     *
      * @return the document id, can be null
      */
     public String getsDocName()
@@ -79,7 +77,6 @@ public class Term implements Comparable<Term>
     }
 
     /**
-     *
      * @return first place this term is shown in the document
      */
     public int getiPlace()
@@ -104,7 +101,6 @@ public class Term implements Comparable<Term>
     }
 
     /**
-     *
      * @see Object
      */
     @Override
@@ -115,6 +111,7 @@ public class Term implements Comparable<Term>
 
     /**
      * Compare this term name to another term name
+     *
      * @param o term to check
      * @return 0 if terms name is lexicographic equal, less then 0 if this is lexicographic smaller then o,
      * greater then 0 if this is lexicographic larger then o.

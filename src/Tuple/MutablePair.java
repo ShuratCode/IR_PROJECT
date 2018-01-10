@@ -49,7 +49,12 @@ public class MutablePair<L, R> implements Serializable
         this.right = right;
     }
 
-
+    /**
+     * Compare two MutablePairs. uses equals method of the fields
+     *
+     * @param o another MutablePair to compare to
+     * @return true if equal, false if not
+     */
     @Override
     public boolean equals(Object o)
     {
@@ -64,13 +69,18 @@ public class MutablePair<L, R> implements Serializable
 
         MutablePair<?, ?> that = (MutablePair<?, ?>) o;
 
-        if (left != null ? !left.equals(that.left) : that.left != null)
+        if (left != null ? left.equals(that.left) : that.left == null)
         {
-            return false;
+            return right != null ? right.equals(that.right) : that.right == null;
         }
-        return right != null ? right.equals(that.right) : that.right == null;
+        return false;
     }
 
+    /**
+     * Compute hash code for this MutablePair.
+     *
+     * @return the value of the hash function
+     */
     @Override
     public int hashCode()
     {

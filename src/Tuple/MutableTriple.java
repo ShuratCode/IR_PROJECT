@@ -77,7 +77,6 @@ public class MutableTriple<L, M, R> implements Serializable
         return (this.left == null ? 0 : this.left.hashCode() ^ (this.middle == null ? 0 : this.middle.hashCode() ^ (this.right == null ? 0 : this.right.hashCode())));
     }
 
-
     @Override
     public String toString()
     {

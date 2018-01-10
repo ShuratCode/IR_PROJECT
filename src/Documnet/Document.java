@@ -8,10 +8,17 @@ import java.io.Serializable;
  */
 public class Document implements Serializable
 {
+
+    /***********************************************************************************************
+     *                                      Fields                                                 *
+     ***********************************************************************************************/
     private float  fGrade;
     private String sName, sFileName;
     private StringBuilder sbText;
 
+    /***********************************************************************************************
+     *                                      Constructors                                           *
+     ***********************************************************************************************/
     /**
      * We build a new document from a full text. we will separate the doc name and the relevant text for later use
      *
@@ -56,6 +63,10 @@ public class Document implements Serializable
 
     }
 
+    /***********************************************************************************************
+     *                                      Getters                                                *
+     ***********************************************************************************************/
+
     /**
      * @return the document name
      */
@@ -71,6 +82,30 @@ public class Document implements Serializable
     {
         return sbText;
     }
+
+    /**
+     * get the grade of this document
+     *
+     * @return the grade
+     */
+    public float getfGrade()
+    {
+        return fGrade;
+    }
+
+    /**
+     * Get the File this document is at in the corpus
+     *
+     * @return the file name
+     */
+    public String getsFileName()
+    {
+        return sFileName;
+    }
+
+    /***********************************************************************************************
+     *                                      Setters                                                *
+     ***********************************************************************************************/
 
     /**
      * Set the text of the document
@@ -93,16 +128,8 @@ public class Document implements Serializable
     }
 
     /**
-     * get the grade of this document
-     * @return the grade
-     */
-    public float getfGrade()
-    {
-        return fGrade;
-    }
-
-    /**
      * Set new grade for this document
+     *
      * @param fGrade the new grade
      */
     public void setfGrade(float fGrade)
@@ -111,16 +138,8 @@ public class Document implements Serializable
     }
 
     /**
-     * Get the File this document is at in the corpus
-     * @return the file name
-     */
-    public String getsFileName()
-    {
-        return sFileName;
-    }
-
-    /**
      * Set new File name to the document. The Name should be the file in the corpus that this document is at.
+     *
      * @param sFileName new file name
      */
     public void setsFileName(String sFileName)
