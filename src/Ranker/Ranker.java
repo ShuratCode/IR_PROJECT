@@ -40,7 +40,7 @@ public class Ranker
     {
         this.cache = cache;
     }
-//TODO: get query words and tfIdf of words in document grade and calculate
+
 
     public double fnCosin(ArrayList<Double> wordsGrade, double dDocGrade)
     {

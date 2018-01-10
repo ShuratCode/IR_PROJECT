@@ -3,7 +3,10 @@ package View;
 import Model.MyModel;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -30,7 +33,6 @@ public class Controller implements Observer
 
     private String sLastQSPath;
 
-    public Stage stage;
 
     private String sDiPath,sChPath;
 
@@ -241,6 +243,7 @@ public class Controller implements Observer
         Model.fnSaveQ(selectedDirectory.getPath()+"\\"+tQueryName.getText());
         sLastQSPath=selectedDirectory.getPath()+"\\"+tQueryName.getText();
         DBInfo.setText("Status: Save success\n ");
+        tQueryName.setText("");
     }
 
     public void fnRunFileQ()

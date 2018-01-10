@@ -640,7 +640,7 @@ public class MyModel extends Observable
             String                               docN;
             String                               Qid  = Queries.get(i).getLeft();
             DisplayQ.append("Query id - ").append(Qid).append(" results:\n");
-            DisplayQ.append("" + "Number of relevent document return: ").append(String.valueOf(retC)).append("\n");
+            DisplayQ.append("" + "Number of relevant document return: ").append(String.valueOf(retC)).append("\n");
             DisplayQ.append("Documents: ");
             for (int j = 0; j < retC; j++)
             {
@@ -653,7 +653,7 @@ public class MyModel extends Observable
                 QtoSave.append(Qid).append(" 1 ").append(String.valueOf(docN)).append(" 1 1.0 mt\n");
 
             }
-            DisplayQ.append("#################################################\n");
+            DisplayQ.append("\n#################################################\n");
         }
 
     }
@@ -674,19 +674,26 @@ public class MyModel extends Observable
             if (file.exists())
             {
                 br = new BufferedReader(new FileReader(file));
-                String sID = "";
-                String sLine;
+                String        sID = "";
+                String        sLine;
+                StringBuilder sb  = new StringBuilder();
                 while (null != (sLine = br.readLine()))
                 {
-
+                    if (sLine.contains("<title>"))
+                    {
+                        String[] strings = sLine.split("<title>");
+                        sb = new StringBuilder();
+                        sb.append(strings[1]);
+                    }
                     if (sLine.contains("<num>"))
                     {
                         String[] strings = sLine.split(" ");
                         sID = strings[2];
                     }
+
                     if (sLine.contains("<desc> Description:"))
                     {
-                        StringBuilder sb = new StringBuilder();
+
                         while (!(sLine = br.readLine()).contains("</top>"))
                         {
                             if (sLine.equals("") || sLine.contains("<narr>"))
@@ -695,6 +702,7 @@ public class MyModel extends Observable
                             }
                             sb.append(' ').append(sLine);
                         }
+
                         sb.deleteCharAt(0);
                         MutablePair<String, StringBuilder> pair = new MutablePair<>(sID, sb);
                         arrayListResult.add(pair);
