@@ -20,7 +20,7 @@ public class Controller implements Observer {
     @FXML
     private TextField tIn,tOut, tQuery,tQueryName;
     @FXML
-    private Button bStartIndexing, bSaveDC,bLoadDC,bSelectRoot,bSelectDest,bShowCache,bShowDic,bReset,bResetQH,bSaveQ;
+    private Button bStartIndexing, bSaveDC,bLoadDC,bSelectRoot,bSelectDest,bShowCache,bShowDic,bReset,bResetQH,bSaveQ,bRun1Q,bRunFileQ;
     @FXML
     private CheckBox cStemer,cbExtendQ, cbTop5S ;
     @FXML
@@ -47,6 +47,12 @@ public class Controller implements Observer {
         bSaveDC.setDisable(true);
         bShowCache.setDisable(true);
         bShowDic.setDisable(true);
+        bResetQH.setDisable(true);
+        bRun1Q.setDisable(true);
+        bSaveQ.setDisable(true);
+        bRunFileQ.setDisable(true);
+        cbTop5S.setDisable(true);
+        cbExtendQ.setDisable(true);
     }
     public void startIndexing(){
         try {
@@ -149,8 +155,18 @@ public class Controller implements Observer {
 /****************************************************funcs for part B**************************************/
 
     public void fnRunSimpleQ(){
+        if(tQuery.getText().equals("")){
+            AlertBox a = new AlertBox();
+            a.display("Parameters Error", "Please enter a valid query");
+        }
+
         if(cbTop5S.isSelected()){
-            Model.fnMostImportant(tQuery.getText());
+            DirectoryChooser chooser = new DirectoryChooser();
+            chooser.setTitle("Select Corpus path");
+            File selectedDirectory = chooser.showDialog(stage);
+            Model.setCorpusP(selectedDirectory.getPath());
+            new Thread(()->{Model.fnMostImportant(tQuery.getText());}).start();
+
         }
         else new Thread(()->Model.fnRunSimpleQuery(tQuery.getText(),cbExtendQ.isSelected())).start();
 
@@ -168,7 +184,16 @@ public class Controller implements Observer {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select query file");
         File selectedFile = fileChooser.showOpenDialog(stage);
-        Model.fnRunFileQuery(selectedFile.getPath());
+        new Thread(()->{
+            Model.fnRunFileQuery(selectedFile.getPath());
+        }).start();
+    }
+
+    public void turnOExtend(){
+        cbExtendQ.setSelected(false);
+    }
+    public void turnOffTop5(){
+        cbTop5S.setSelected(false);
     }
 /*
     public void fnResetQH(){
@@ -195,12 +220,13 @@ public class Controller implements Observer {
                 break;
             }
             case "input error":{
-
+                break;
             }
             case "SimpleQ returned" :{
                 Platform.runLater(()->{
                     DisplayQ d=new DisplayQ();
                     d.display("Query results", Model.DisplayQ.toString());
+                    bSaveQ.setDisable(false);
                 });
                 break;
             }
@@ -210,6 +236,11 @@ public class Controller implements Observer {
                     bShowCache.setDisable(false);
                     bShowDic.setDisable(false);
                     bLoadDC.setDisable(false);
+                    bResetQH.setDisable(false);
+                    bRun1Q.setDisable(false);
+                    bRunFileQ.setDisable(false);
+                    cbExtendQ.setDisable(false);
+                    cbTop5S.setDisable(false);
                     isLoad=true;
                 });
                 break;
@@ -218,6 +249,13 @@ public class Controller implements Observer {
                 Platform.runLater(()->{
                     DisplayQ d=new DisplayQ();
                     d.display("Query File results", Model.DisplayQ.toString());
+                });
+                break;
+            }
+            case "Top 5 end":{
+                Platform.runLater(()->{
+                    DisplayQ d=new DisplayQ();
+                    d.display("Top 5 Lines", Model.DisplayQ.toString());
                 });
                 break;
             }

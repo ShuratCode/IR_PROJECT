@@ -544,22 +544,21 @@ public class MyModel extends Observable
 
     //todo : add all the new funcs
     //TODO: complete this.
-    public String[] fnMostImportant(String sDocName)
+    public void fnMostImportant(String sDocName)
     {
-        if (this.searcher == null)
-        {
-            this.searcher = new Searcher(bToStem, this.indexer.getHashMapDocsGrade(), this.sRootPath, this.indexer.getDictionary(), this.indexer.getCache());
-            HashSet<String> stopWords = readFile.fnReadStopWords("C:\\Users\\IBM_ADMIN\\IdeaProjects\\test1\\corpus\\stop_words.txt");
-            this.searcher.fnSetStopWords(stopWords);
-        }
+        DisplayQ=new StringBuilder();
         ArrayList<MutablePair<String, Double>> arrayListPairs = this.searcher.fnMostImportant(sDocName);
         String[]                               result         = new String[5];
         for (int iIndex = 0, iSize = arrayListPairs.size(); iIndex < iSize && iIndex < 5; iIndex++)
         {
             MutablePair<String, Double> pair = arrayListPairs.get(iIndex);
             result[iIndex] = pair.getLeft();
+            //*/
+            DisplayQ.append("{Grade:" +(5-iIndex)+"}"+arrayListPairs.get(iIndex).getLeft()+"\n");
+
         }
-        return result;
+        setChanged();
+        notifyObservers("Top 5 end");
     }
 
     public void fnRunSimpleQuery(String Query , boolean extend){
@@ -729,7 +728,10 @@ public class MyModel extends Observable
     }
 
 
-
+    public void setCorpusP(String corpusP) {
+        this.sRootPath = corpusP;
+        searcher.sCorpusPath=corpusP;
+    }
 }
 
 

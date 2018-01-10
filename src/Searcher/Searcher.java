@@ -16,7 +16,7 @@ import java.util.*;
 
 public class Searcher
 {
-    private String  sCorpusPath;
+    public String  sCorpusPath;
     private Parse   parse;
     private boolean bWikipedia, bToStem;
     private PorterStemmer                                          stemmer;
