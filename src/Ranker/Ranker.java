@@ -16,7 +16,7 @@ public class Ranker
     private HashMap<String, MutablePair<String, Long>>             cache;
     private final double dAvgDocLength = 182.51711338024444;
     private final double dK1Const      = 1.2;
-    private final double dBConst       = 0.75;
+    private final double dBConst       = 0.5;
 
     public Ranker(HashMap<String, MutablePair<double[], String>> hashMapDocsGrades, HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary, HashMap<String, MutablePair<String, Long>> cache)
     {

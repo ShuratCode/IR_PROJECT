@@ -249,6 +249,7 @@ public class Controller implements Observer {
                 Platform.runLater(()->{
                     DisplayQ d=new DisplayQ();
                     d.display("Query File results", Model.DisplayQ.toString());
+                    bSaveQ.setDisable(false);
                 });
                 break;
             }
