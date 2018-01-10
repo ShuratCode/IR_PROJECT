@@ -270,6 +270,54 @@ public class Searcher
                 return "company";
             case "presidents":
                 return "president";
+            case "persons":
+                return "person";
+            case "ways":
+                return "way";
+            case "days":
+                return "day";
+            case "things":
+                return "thing";
+            case "men":
+                return "man";
+            case "women":
+                return "woman";
+            case "worlds":
+                return "world";
+            case "lives":
+                return "life";
+            case "hands":
+                return "hand";
+            case "children":
+                return "child";
+            case "eyes":
+                return "eye";
+            case "places":
+                return "place";
+            case "works":
+                return "work";
+            case "weeks":
+                return "week";
+            case "cases":
+                return "case";
+            case "points":
+                return "point";
+            case "numbers":
+                return "number";
+            case "facts":
+                return "fact";
+            case "wars":
+                return "war";
+            case "sets":
+                return "set";
+            case "generals":
+                return "general";
+            case "levels":
+                return "level";
+            case "dollar":
+                return "dollars";
+            case "month":
+                return "months";
 
         }
         return word;
