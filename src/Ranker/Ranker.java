@@ -44,34 +44,37 @@ public class Ranker
 
     public double fnCosin(ArrayList<Double> wordsGrade, double dDocGrade)
     {
-        double dUp         = wordsGrade.stream().mapToDouble(d -> d).sum();
+        double dUp       = wordsGrade.stream().mapToDouble(d -> d).sum();
         double dQueryGrade = Math.sqrt(wordsGrade.size());
         double dDown       = dDocGrade * dQueryGrade;
         return dUp / dDown;
     }
 
-    public ArrayList<Map.Entry<String, Double>> fnGetBestDocs(ArrayList<String> query, int iNumReturn)
-    {
-        HashMap<String, Double> rankList  = new HashMap<>();
+    public ArrayList<Map.Entry<String, Double>> fnGetBestDocs(ArrayList<String> query, int iNumReturn){
+        HashMap<String,Integer> dupTerm=new HashMap<>();
+        for (int i=0;i<query.size();i++){
+            String t=query.get(i);
+            if(dupTerm.containsKey(t)){
+                dupTerm.put(t,dupTerm.get(t)+1);
+            }
+            else dupTerm.put(t,1);
+        }
+        HashMap<String,Double>  rankList  =new HashMap<>();
         HashMap<String, Double> rankList2 = new HashMap<>();
         String                  sLine;
         String[]                strings;
         long                    lPointer;
-        for (int i = 0; i < query.size(); i++)
-        {// loop for each word in q
-            String term = query.get(i);
-            if (!dictionary.containsKey(term))
-            {
+        for(int i=0;i<query.size();i++){// loop for each word in q
+            String term=query.get(i);
+            if(dupTerm.get(term)==0){ continue;}
+            if(!dictionary.containsKey(term))
                 continue;
-            }
             lPointer = this.dictionary.get(term).getRight();
-            if (dictionary.containsKey(term))
-            {
-                float termIDF = dictionary.get(term).getMiddle();
-                if (cache.containsKey(term))
-                {
-                    lPointer = cache.get(term).getRight();
-                    sLine = cache.get(term).getLeft();
+            if(dictionary.containsKey(term)){
+                float termIDF=dictionary.get(term).getMiddle();
+                if(cache.containsKey(term)){
+                    lPointer=cache.get(term).getRight();
+                    sLine=cache.get(term).getLeft();
                     strings = sLine.split("!#");
 
                     for (int iIndex = 1, iLength = strings.length; iIndex < iLength; iIndex++)//compute docs in cache
@@ -80,23 +83,22 @@ public class Ranker
                         double maxTFi=hashMapDocsGrades.get(sDocTemp).getLeft()[0];
                         iIndex++;
                         int Fi = Integer.parseInt(strings[iIndex]);
-                        if (rankList.containsKey(sDocTemp))
-                        {
+                        if(rankList.containsKey(sDocTemp)){
                             double dUp    = Fi * (dK1Const + 1);
                             double dDown  = Fi + dK1Const * (1 - dBConst + dBConst * (this.hashMapDocsGrades.get(sDocTemp).getLeft()[1] / dAvgDocLength));
                             double dGrade = termIDF * (dUp / dDown);
                             //
-                            rankList.put(sDocTemp, rankList.get(sDocTemp) + ((((double) Fi) / maxTFi) * termIDF));
-                            rankList2.put(sDocTemp, rankList2.get(sDocTemp) + dGrade);
-                        }
-                        else
-                        {
+                            rankList.put(sDocTemp,rankList.get(sDocTemp)+((((double)Fi)/maxTFi)*termIDF)*dupTerm.get(term));
+                            rankList2.put(sDocTemp, rankList2.get(sDocTemp) + dGrade*dupTerm.get(term));
+                            }
+                        else{
                             double dUp    = Fi * (dK1Const + 1);
                             double dDown  = Fi + dK1Const * (1 - dBConst + dBConst * (this.hashMapDocsGrades.get(sDocTemp).getLeft()[1] / dAvgDocLength));
                             double dGrade = termIDF * (dUp / dDown);
                             //
-                            rankList.put(sDocTemp, ((((double) Fi) / maxTFi) * termIDF));
-                            rankList2.put(sDocTemp, dGrade);
+                            rankList.put(sDocTemp, ((((double) Fi) / maxTFi) * termIDF)*dupTerm.get(term));
+                            rankList2.put(sDocTemp, dGrade*dupTerm.get(term));
+
                         }
                     }
                 }
@@ -117,8 +119,8 @@ public class Ranker
                             double dDown  = Fi + dK1Const * (1 - dBConst + dBConst * (this.hashMapDocsGrades.get(sDocTemp).getLeft()[1] / dAvgDocLength));
                             double dGrade = termIDF * (dUp / dDown);
                             //
-                            rankList.put(sDocTemp, rankList.get(sDocTemp) + ((((double) Fi) / maxTFi) * termIDF));
-                            rankList2.put(sDocTemp, rankList2.get(sDocTemp) + dGrade);
+                            rankList.put(sDocTemp, rankList.get(sDocTemp) + ((((double) Fi) / maxTFi) * termIDF)*dupTerm.get(term));
+                            rankList2.put(sDocTemp, rankList2.get(sDocTemp) + dGrade*dupTerm.get(term));
                         }
                         else
                         {
@@ -126,8 +128,8 @@ public class Ranker
                             double dDown  = Fi + dK1Const * (1 - dBConst + dBConst * (this.hashMapDocsGrades.get(sDocTemp).getLeft()[1] / dAvgDocLength));
                             double dGrade = termIDF * (dUp / dDown);
                             //
-                            rankList.put(sDocTemp, ((((double) Fi) / maxTFi) * termIDF));
-                            rankList2.put(sDocTemp, dGrade);
+                            rankList.put(sDocTemp, ((((double) Fi) / maxTFi) * termIDF)*dupTerm.get(term));
+                            rankList2.put(sDocTemp, dGrade*dupTerm.get(term));
                         }
                     }
 
@@ -137,6 +139,7 @@ public class Ranker
                     e.printStackTrace();
                 }
             }
+            dupTerm.put(term,0);
         }
         ArrayList<Map.Entry<String, Double>> cosin = new ArrayList<>(rankList.entrySet());
 
