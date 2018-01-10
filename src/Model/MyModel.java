@@ -65,13 +65,6 @@ public class MyModel extends Observable
 
     }
 
-    public MyModel(String sRootPath, boolean bToStem, String sPathForObjects)
-    {
-        this.sRootPath = sRootPath;
-        this.bToStem = bToStem;
-        //TODO: read dictionary and cache and documents objects.
-    }
-
     /**
      * Build the data base and index from the path we got in the builder.
      * first we will collect all the files paths, and then will send each path to the readFile.
@@ -349,7 +342,12 @@ public class MyModel extends Observable
         this.indexer.fnWriteDicAndCache(sPathForObjects);
     }
 
-    private PriorityQueue<MutablePair<String, Float>> fnCreateCahce()
+    /**
+     * Sort the cache from the indexer. Return first the term with most idf score
+     *
+     * @return priority queue
+     */
+    private PriorityQueue<MutablePair<String, Float>> fnCreateCache()
     {
         HashMap<String, MutableTriple<Integer[], Float, Long>> hashMap = this.indexer.getDictionary();
         PriorityQueue<MutablePair<String, Float>> pairs = new PriorityQueue<>((o1, o2) ->
@@ -384,7 +382,7 @@ public class MyModel extends Observable
         try
         {
             BufferedWriter                            bf    = new BufferedWriter(new FileWriter(file));
-            PriorityQueue<MutablePair<String, Float>> pairs = fnCreateCahce();
+            PriorityQueue<MutablePair<String, Float>> pairs = fnCreateCache();
             for (MutablePair<String, Float> pair : pairs)
             {
                 bf.write(pair.getLeft());

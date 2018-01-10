@@ -24,8 +24,6 @@ public class MyIndexer
     private HashMap<String, MutablePair<double[], String>> hashmapDocs;
 
 
-
-
     /**
      * Creating new Indexer.
      * Also Create new directory With the name Posting
@@ -73,7 +71,7 @@ public class MyIndexer
             // Looping over all the terms and update the dictionary and the hashMap
             for (int i = 0, arrayListTermsSize = arrayListTerms.size(); i < arrayListTermsSize; i++)
             {
-                Term   term  = arrayListTerms.get(i);
+                Term term = arrayListTerms.get(i);
 
                 String sTerm = term.getsName();
 
@@ -122,10 +120,10 @@ public class MyIndexer
     /**
      * Merge all the temp posting files to one single posting file
      *
+     * @param mDocInfo
      * @throws IOException throws exception from creating a new file or create new RandomAccessFile
      * @see File
      * @see RandomAccessFile
-     * @param mDocInfo
      */
     public void fnMergePostings(HashMap<String, MutablePair<double[], String>> mDocInfo) throws IOException
     {
@@ -162,8 +160,8 @@ public class MyIndexer
             long lPointer;
             while (!fnDoneToRead(arrFilesDone)) // loop until we will finish to read all the files
             {
-                String[]           arrTerms               = fnGetTermsName(arrayStringLines, arrFilesDone); //get all the terms from each line
-                String             sMinTerm               = fnGetMinTerm(arrTerms, iIndex, iSize);
+                String[] arrTerms = fnGetTermsName(arrayStringLines, arrFilesDone); //get all the terms from each line
+                String   sMinTerm = fnGetMinTerm(arrTerms, iIndex, iSize);
 
                 ArrayList<Integer> arrayListSmallestIndex = fnGetSmallest(arrFilesDone, sMinTerm, arrTerms, iIndex, iSize);
                 StringBuilder      sbLineToWrite          = fnCreateConstLine(arrayStringLines, arrayListSmallestIndex);
@@ -1139,11 +1137,23 @@ public class MyIndexer
         return new String[]{sPathForDic, sPathForCache};
     }
 
+    /**
+     * Get the idf grade of a term in the corpus.
+     *
+     * @param sTerm the term which we want the idf grade for.
+     * @return idf grade of the term
+     */
     public float fnGetIDFGrade(String sTerm)
     {
         return this.dictionary.get(sTerm).getMiddle();
     }
 
+    /**
+     * Read the hash map docs grade from a file. uses object input stream.
+     * Will check if we use stemmer or not and depend on that will choose the correct file
+     *
+     * @param sPathForObjects the path for the folder that contains the file to read.
+     */
     public void fnReadDocsGrades(String sPathForObjects)
     {
         String sPathForGrades;
@@ -1189,18 +1199,33 @@ public class MyIndexer
         }
     }
 
+    /**
+     * return the hash map of docs data. first cell in the array is maxTF, second is doc length, third is the grade.
+     * The string in the file name in the corpus
+     *
+     * @return hash map of docs data
+     */
     public HashMap<String, MutablePair<double[], String>> getHashMapDocsGrade()
     {
         return hashmapDocs;
     }
 
+    /**
+     * Add new doc to the hash map of the docs data
+     *
+     * @param sDocName the name of the document
+     * @param ints     array of maxTf and doc length
+     * @param sDocFile the file in the corpus who contains the document
+     */
     public void fnAddDoc(String sDocName, int[] ints, String sDocFile)
     {
         double[] d = {ints[0], ints[1], 0};
         this.hashmapDocs.put(sDocName, new MutablePair<>(d, sDocFile));
     }
-/******************************************need to delet*********************************/
-    public HashMap<String,MutablePair<String,Long>> getCache() {
+
+    /******************************************need to delet*********************************/
+    public HashMap<String, MutablePair<String, Long>> getCache()
+    {
         return cache;
     }
 }

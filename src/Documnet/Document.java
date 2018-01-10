@@ -82,26 +82,47 @@ public class Document implements Serializable
         this.sbText = sbText;
     }
 
+    /**
+     * Set new name for the document
+     *
+     * @param sName the new name
+     */
     public void setsName(String sName)
     {
         this.sName = sName;
     }
 
+    /**
+     * get the grade of this document
+     * @return the grade
+     */
     public float getfGrade()
     {
         return fGrade;
     }
 
+    /**
+     * Set new grade for this document
+     * @param fGrade the new grade
+     */
     public void setfGrade(float fGrade)
     {
         this.fGrade = fGrade;
     }
 
+    /**
+     * Get the File this document is at in the corpus
+     * @return the file name
+     */
     public String getsFileName()
     {
         return sFileName;
     }
 
+    /**
+     * Set new File name to the document. The Name should be the file in the corpus that this document is at.
+     * @param sFileName new file name
+     */
     public void setsFileName(String sFileName)
     {
         this.sFileName = sFileName;
