@@ -8,6 +8,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+/**
+ * this class used to display the query results for thew user
+ */
 public class DisplayQ
 {
     public void display(String WinName, String text)

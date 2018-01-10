@@ -9,12 +9,21 @@ import javafx.stage.Stage;
 public class Main extends Application
 {
 
+    /**
+     * the main of the application setup and run the program
+     * @param args
+     */
     public static void main(String[] args)
     {
 
         launch(args);
     }
 
+    /**
+     * start the program
+     * @param primaryStage
+     * @throws Exception
+     */
     @Override
     public void start(Stage primaryStage) throws Exception
     {

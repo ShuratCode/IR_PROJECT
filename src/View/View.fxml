@@ -107,7 +107,7 @@
               </rowConstraints>
                <children>
                   <Button fx:id="bSaveQ" mnemonicParsing="false" onAction="#saveQ" text="Save query result" GridPane.rowIndex="1" />
-                  <Button fx:id="bResetQH" alignment="CENTER" mnemonicParsing="false" prefHeight="25.0" prefWidth="93.0" text="Reset Queries " GridPane.rowIndex="2">
+                  <Button fx:id="bResetQH" alignment="CENTER" mnemonicParsing="false" onAction="#fnResetQH" prefHeight="25.0" prefWidth="93.0" text="Reset Queries " GridPane.rowIndex="2">
                      <opaqueInsets>
                         <Insets />
                      </opaqueInsets>
@@ -115,8 +115,6 @@
                         <Insets />
                      </GridPane.margin>
                   </Button>
-                  <Label prefHeight="23.0" prefWidth="77.0" text="Query name:" />
-                  <TextField fx:id="tQueryName" GridPane.columnIndex="1" />
                </children>
             </GridPane>
             </children>

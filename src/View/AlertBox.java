@@ -9,7 +9,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- * Created by Admin on 21/06/2017.
+ * this class used to display Error messages to the user
  */
 public class AlertBox
 {

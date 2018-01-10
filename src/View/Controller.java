@@ -17,13 +17,17 @@ import java.util.Observable;
 import java.util.Observer;
 
 
+/**
+ * this class is the main controler for the view , the comunication withe the model is with Observer /Observable
+ */
 public class Controller implements Observer
 {
+
     public  Stage     stage;
     private MyModel   Model;
     private boolean   isLoad;
     @FXML
-    private TextField tIn, tOut, tQuery, tQueryName;
+    private TextField tIn, tOut, tQuery;
     @FXML
     private Button bStartIndexing, bSaveDC, bLoadDC, bSelectRoot, bSelectDest, bShowCache, bShowDic, bReset, bResetQH, bSaveQ, bRun1Q, bRunFileQ;
     @FXML
@@ -32,22 +36,30 @@ public class Controller implements Observer
     private Label DBInfo;
 
     private String sLastQSPath;
-
-
     private String sDiPath,sChPath;
 
 
+    /**
+     * constructor
+     */
     public Controller()
     {
         Model = null;
     }
 
+    /**
+     * setter for Model
+     * @param Model
+     */
     public void setModel(MyModel Model)
     {
         this.Model = Model;
     }
 
     /***********Functions*****************/
+    /**
+     * this function initialize the view
+     */
     public void initView()
     {
         bReset.setDisable(true);
@@ -62,10 +74,18 @@ public class Controller implements Observer
         cbExtendQ.setDisable(true);
     }
 
+    /**
+     *this function gets src and dest pathe and start indexing the given DB
+     */
     public void startIndexing()
     {
         try
         {
+            if((tIn.getText()==null||tIn.getText().equals(""))||(tOut.getText()==null||tOut.getText().equals(""))){
+                AlertBox a = new AlertBox();
+                a.display("Parameters Error", "Please enter a valid root and destination path");
+                return;
+            }
             Model = new MyModel(tIn.getText(), cStemer.isSelected(), tOut.getText(), 10);
             Model.addObserver(this);
             bStartIndexing.setDisable(true);
@@ -84,18 +104,25 @@ public class Controller implements Observer
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    AlertBox a = new AlertBox();
+                    a.display("Parameters Error", "Please enter a valid root and destination path");
+                    return;
                 }
             }).start();
 
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            AlertBox a = new AlertBox();
+            a.display("Parameters Error", "Please enter a valid root and destination path");
+            return;
         }
 
     }
 
+    /**
+     * this function reset the Model and free all the DB
+     */
     public void reset()
     {
         if (Model != null && isLoad)
@@ -109,6 +136,10 @@ public class Controller implements Observer
 
     }
 
+    /**
+     * this func save the dictionary to a given folder
+     *
+     */
     public void saveDC()
     {
         if (isLoad)
@@ -123,6 +154,9 @@ public class Controller implements Observer
         }
     }
 
+    /**
+     * this func Load all the needed objects from a given folder
+     */
     public void bLoadDC()
     {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -139,6 +173,9 @@ public class Controller implements Observer
         }
     }
 
+    /**
+     * let the user pick the root path of the DB
+     */
     public void brwsTIN()
     {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -147,6 +184,9 @@ public class Controller implements Observer
         tIn.setText(selectedDirectory.getPath());
     }
 
+    /**
+     * let the user pick the output folder
+     */
     public void brwsTOUT()
     {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -155,6 +195,9 @@ public class Controller implements Observer
         tOut.setText(selectedDirectory.getPath());
     }
 
+    /**
+     * display the dictionary for the user
+     */
     public void openDi()
     {
         if (isLoad)
@@ -173,6 +216,9 @@ public class Controller implements Observer
         }
     }
 
+    /**
+     * display the Cache for the user
+     */
     public void openCh()
     {
         if (isLoad)
@@ -191,7 +237,10 @@ public class Controller implements Observer
     }
 
     /****************************************************funcs for part B**************************************/
-
+    /**
+     * get hand writen query and display the results.
+     * ther are 3 types of uses here: 1-extend one word query 2-return top 5 sentences for given document 3- run simple query
+     */
     public void fnRunSimpleQ()
     {
         if (tQuery.getText().equals(""))
@@ -230,22 +279,32 @@ public class Controller implements Observer
     }
 
 
+    /**
+     * get specified path to save the query results
+     */
     public void saveQ()
     {
-        DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("Select Root path");
-        File selectedDirectory = chooser.showDialog(stage);
-        if(selectedDirectory.getPath().equals("")){
-            AlertBox a = new AlertBox();
-            a.display("Parameters Error", "Please enter a valid directory to save" );
-            return;
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Query Results");
+        File file = fileChooser.showSaveDialog(stage);
+        if (file != null) {
+            try {
+                Model.fnSaveQ(file.getPath());
+                sLastQSPath=file.getPath();
+            } catch (Exception ex) {
+                AlertBox a = new AlertBox();
+                a.display("Parameters Error", "Please enter a valid directory to save" );
+            }
         }
-        Model.fnSaveQ(selectedDirectory.getPath()+"\\"+tQueryName.getText());
-        sLastQSPath=selectedDirectory.getPath()+"\\"+tQueryName.getText();
-        DBInfo.setText("Status: Save success\n ");
-        tQueryName.setText("");
+        else {
+            AlertBox a = new AlertBox();
+            a.display("Parameters Error", "Please enter a valid directory to save");
+        }
     }
 
+    /**
+     * gets Query file and return the results for the queries
+     */
     public void fnRunFileQ()
     {
         FileChooser fileChooser = new FileChooser();
@@ -263,20 +322,35 @@ public class Controller implements Observer
         }).start();
     }
 
+    /**
+     * not allow Extend with Top5
+     */
     public void turnOExtend()
     {
         cbExtendQ.setSelected(false);
     }
-
+    /**
+     * not allow Top5 with Extend
+     */
     public void turnOffTop5()
     {
         cbTop5S.setSelected(false);
     }
 
+    /**
+     * reset last query saved history and load items
+     */
     public void fnResetQH(){
         Model.fnResetQHistory(sLastQSPath);
+        sLastQSPath="";
+        fnFreezWindow();
+        bLoadDC.setDisable(false);
+
     }
 
+    /**
+     * turn of all the buttons
+     */
     private void fnFreezWindow(){
     bStartIndexing.setDisable(true);
     bSaveDC.setDisable(true);
@@ -292,6 +366,13 @@ public class Controller implements Observer
     bRunFileQ.setDisable(true);
 }
 
+    /**
+     * inherent from Observer,
+     * this func gets notifications whenever a process finished or crashed
+     * part of the comunication with the model
+     * @param o the observable sender
+     * @param arg the message
+     */
     @Override
     public void update(Observable o, Object arg) {
         String s=(String)arg;

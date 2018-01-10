@@ -8,8 +8,14 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.*;
 
+/**
+ * this class gets query and return the best
+ */
 public class Ranker
 {
+    /***********************************************************************************************
+     *                                      Fields                                                 *
+     ***********************************************************************************************/
     private final double dAvgDocLength = 182.51711338024444;
     private final double dK1Const      = 1.2;
     private final double dBConst       = 0.5;
@@ -17,7 +23,9 @@ public class Ranker
     private RandomAccessFile                                       randomAccessFile;
     private HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary;
     private HashMap<String, MutablePair<String, Long>>             cache;
-
+    /***********************************************************************************************
+     *                                      constructors                                                 *
+     ***********************************************************************************************/
     public Ranker(HashMap<String, MutablePair<double[], String>> hashMapDocsGrades, HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary, HashMap<String, MutablePair<String, Long>> cache)
     {
         this.hashMapDocsGrades = hashMapDocsGrades;
@@ -26,22 +34,40 @@ public class Ranker
 
     }
 
+    /**
+     * grade hash map setter
+     * @param hashMapDocsGrades
+     */
     public void setHashMapDocsGrades(HashMap<String, MutablePair<double[], String>> hashMapDocsGrades)
     {
         this.hashMapDocsGrades = hashMapDocsGrades;
     }
 
+    /**
+     * dictionary setter
+     * @param dictionary
+     */
     public void setDictionary(HashMap<String, MutableTriple<Integer[], Float, Long>> dictionary)
     {
         this.dictionary = dictionary;
     }
 
+    /**
+     * cach setter
+     * @param cache
+     */
     public void setCache(HashMap<String, MutablePair<String, Long>> cache)
     {
         this.cache = cache;
     }
 
 
+    /**
+     * gets Arr of words and a doc grade and return the cosim grade
+     * @param wordsGrade
+     * @param dDocGrade
+     * @return
+     */
     public double fnCosin(ArrayList<Double> wordsGrade, double dDocGrade)
     {
         double dUp       = wordsGrade.stream().mapToDouble(d -> d).sum();
@@ -50,6 +76,14 @@ public class Ranker
         return dUp / dDown;
     }
 
+    /**
+     * the main function of the class
+     * we get the query as arr and we run for each word and make a calculated filds for all the docs we find.
+     * the formula is based of cosim mixed with BM25 algorithms
+     * @param query
+     * @param iNumReturn
+     * @return Pair Arr of document and its grade
+     */
     public ArrayList<Map.Entry<String, Double>> fnGetBestDocs(ArrayList<String> query, int iNumReturn){
         HashMap<String,Integer> dupTerm=new HashMap<>();
         for (int i=0;i<query.size();i++){
@@ -187,6 +221,10 @@ public class Ranker
         return cosin;
     }
 
+    /**
+     * initialize the our random access file
+     * @param sReadPosting
+     */
     public void fnRandomAccessFileInitialize(String sReadPosting)
     {
         File posting = new File(sReadPosting);
