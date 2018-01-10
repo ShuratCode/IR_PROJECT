@@ -61,8 +61,6 @@ public class Searcher
         if (bExtend)
         {
             String[] arrayWordsFromWikipedia = fnGetWordsFromWikipedia(sQuery);
-            //TODO: continue this
-
 
             arrayListQuery.add(String.valueOf(sQuery));
             arrayListQuery.add(arrayWordsFromWikipedia[0]);
