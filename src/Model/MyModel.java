@@ -739,8 +739,7 @@ public class MyModel extends Observable
      *
      * @param pathToSave where to save the query
      */
-    public void fnSaveQ(String pathToSave)
-    {
+    public void fnSaveQ(String pathToSave) throws IOException {
         File file = new File(pathToSave);
         if (!file.exists())
         {
@@ -754,20 +753,17 @@ public class MyModel extends Observable
             }
         }
 
-        try
-        {
+
             BufferedWriter bf = new BufferedWriter(new FileWriter(file));
             bf.write(QtoSave.toString());
             bf.flush();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+
+
     }
 
     public void fnResetQHistory(String sLastQSPath) {
-
+        File file  = new File(sLastQSPath);
+        file.delete();
     }
 /***********************************to be deleted*****************************/
     public HashMap<String, MutableTriple<Integer[], Float, Long>> fnGetDic() {
