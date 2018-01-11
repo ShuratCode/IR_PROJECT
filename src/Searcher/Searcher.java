@@ -359,7 +359,8 @@ public class Searcher
             if (null != doc)
             {
                 ArrayList<String>                      sLines = this.parse.fnGetSentences(doc.getText());
-                ArrayList<MutablePair<String, Double>> pairs  = fnGetLinesGrades(sLines, sDocName);
+                MutablePair<ArrayList<Term>, int[]>    pair   = this.parse.fnParseText1(doc.getText(), doc.getName());
+                ArrayList<MutablePair<String, Double>> pairs  = fnGetLinesGrades(sLines, pair, sDocName);
                 pairs.sort(Comparator.comparingDouble(MutablePair::getRight));
                 Collections.reverse(pairs);
                 return pairs;
@@ -377,9 +378,16 @@ public class Searcher
      * @param sDocName the document we calculate the grades for.
      * @return list of pairs with sentence and grade
      */
-    private ArrayList<MutablePair<String, Double>> fnGetLinesGrades(ArrayList<String> sLines, String sDocName)
+    private ArrayList<MutablePair<String, Double>> fnGetLinesGrades(ArrayList<String> sLines, MutablePair<ArrayList<Term>, int[]> pair2, String sDocName)
     {
-        ArrayList<MutablePair<String, Double>> result = new ArrayList<>();
+        ArrayList<MutablePair<String, Double>> result   = new ArrayList<>();
+        ArrayList<Term>                        terms    = pair2.getLeft();
+        HashMap<String, Integer>               termFreq = new HashMap<>();
+        for (int i = 0, termsSize = terms.size(); i < termsSize; i++)
+        {
+            Term term = terms.get(i);
+            termFreq.put(term.getsName(), term.getiNumOfTimes());
+        }
         for (int i = 0, sLinesSize = sLines.size(); i < sLinesSize; i++)
         {
             String                              sLine         = sLines.get(i);
@@ -394,7 +402,8 @@ public class Searcher
                 {
                     continue;
                 }
-                int    iTF    = fnGetTF(sWord, sDocName);
+                //int    iTF    = fnGetTF(sWord, sDocName);
+                int    iTF    = termFreq.get(sWord);
                 double dGrade = iTF / iMaxTF;
                 //result.add(new MutablePair<>(sWord, dGrade));
                 dLineGrade += dGrade;
