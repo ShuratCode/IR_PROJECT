@@ -7,12 +7,12 @@ import java.io.Serializable;
  * @since 26-Nov-17
  */
 public class Document implements Serializable
-{
+    {
 
     /***********************************************************************************************
      *                                      Fields                                                 *
      ***********************************************************************************************/
-    private float  fGrade;
+    private float fGrade;
     private String sName, sFileName;
     private StringBuilder sbText;
 
@@ -25,43 +25,43 @@ public class Document implements Serializable
      * @param sbDoc the full text that represent the hole document
      */
     public Document(StringBuilder sbDoc)
-    {
-        int iIndexOfStartName = sbDoc.indexOf("<DOCNO>");
-        int iIndexOfEndName   = sbDoc.indexOf("</DOCNO>");
+        {
+        int iIndexOfStartName = sbDoc.indexOf("<DOCNO>"); // The index of the starting point of the document
+        int iIndexOfEndName = sbDoc.indexOf("</DOCNO>");
         this.sName = sbDoc.substring(iIndexOfStartName + 7, iIndexOfEndName);
 
 
         int iIndexOfStartText = sbDoc.indexOf("<TEXT>");
         int iIndexOfEndText;
         if (-1 == iIndexOfStartText)
-        {
+            {
             iIndexOfStartText = sbDoc.indexOf("<DATELINE>");
             if (-1 == iIndexOfStartText)
-            {
+                {
                 iIndexOfStartText = sbDoc.indexOf("<P>");
                 if (-1 != iIndexOfStartText)
-                {
+                    {
                     iIndexOfEndText = sbDoc.lastIndexOf("</P>");
                     this.sbText = new StringBuilder(sbDoc.substring(iIndexOfStartText + 10, iIndexOfEndText));
 
+                    }
                 }
-            }
             else
-            {
+                {
                 iIndexOfEndText = sbDoc.indexOf("</DATELINE>");
                 this.sbText = new StringBuilder(sbDoc.substring(iIndexOfStartText + 6, iIndexOfEndText));
 
+                }
             }
-        }
         else
-        {
+            {
             iIndexOfEndText = sbDoc.indexOf("</TEXT>");
             this.sbText = new StringBuilder(sbDoc.substring(iIndexOfStartText + 6, iIndexOfEndText));
 
+            }
+
+
         }
-
-
-    }
 
     /***********************************************************************************************
      *                                      Getters                                                *
@@ -71,17 +71,17 @@ public class Document implements Serializable
      * @return the document name
      */
     public String getName()
-    {
+        {
         return sName;
-    }
+        }
 
     /**
      * @return the text of the document
      */
     public StringBuilder getText()
-    {
+        {
         return sbText;
-    }
+        }
 
     /**
      * get the grade of this document
@@ -89,9 +89,9 @@ public class Document implements Serializable
      * @return the grade
      */
     public float getfGrade()
-    {
+        {
         return fGrade;
-    }
+        }
 
     /**
      * Get the File this document is at in the corpus
@@ -99,9 +99,9 @@ public class Document implements Serializable
      * @return the file name
      */
     public String getsFileName()
-    {
+        {
         return sFileName;
-    }
+        }
 
     /***********************************************************************************************
      *                                      Setters                                                *
@@ -113,9 +113,9 @@ public class Document implements Serializable
      * @param sbText the text to save
      */
     public void setText(StringBuilder sbText)
-    {
+        {
         this.sbText = sbText;
-    }
+        }
 
     /**
      * Set new name for the document
@@ -123,9 +123,9 @@ public class Document implements Serializable
      * @param sName the new name
      */
     public void setsName(String sName)
-    {
+        {
         this.sName = sName;
-    }
+        }
 
     /**
      * Set new grade for this document
@@ -133,9 +133,9 @@ public class Document implements Serializable
      * @param fGrade the new grade
      */
     public void setfGrade(float fGrade)
-    {
+        {
         this.fGrade = fGrade;
-    }
+        }
 
     /**
      * Set new File name to the document. The Name should be the file in the corpus that this document is at.
@@ -143,7 +143,7 @@ public class Document implements Serializable
      * @param sFileName new file name
      */
     public void setsFileName(String sFileName)
-    {
+        {
         this.sFileName = sFileName;
+        }
     }
-}
